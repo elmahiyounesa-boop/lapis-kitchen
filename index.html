@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lapis Kitchen OS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F7F6F2;color:#1A1A1A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;min-height:100vh;font-size:15px}
+input,select,textarea,button{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}
+button{cursor:pointer}
+.nav{background:#fff;border-bottom:3px solid #8B6220;padding:0 14px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.nav-logo{font-size:17px;letter-spacing:.12em;color:#1A1A1A;font-weight:bold}
+.nav-sub{font-size:15px;letter-spacing:.15em;color:#8B6220;text-transform:uppercase}
+.nbtn{background:#F7F6F2;color:#444;border:1px solid #DDD;border-radius:4px;padding:5px 9px;font-size:16px;letter-spacing:.05em;text-transform:uppercase;transition:all .15s;white-space:nowrap}
+.nbtn.active{background:#8B6220;color:#fff;border-color:#8B6220}
+.page{padding:16px 14px;max-width:980px;margin:0 auto;display:none}
+.page.active{display:block}
+.plabel{font-size:16px;letter-spacing:.2em;color:#8B6220;text-transform:uppercase;margin-bottom:3px}
+.ptitle{font-size:23px;font-weight:normal;margin-bottom:12px}
+.card{background:#fff;border:1px solid #E8E4DC;border-radius:8px;padding:13px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.tag{font-size:16px;padding:2px 7px;border-radius:3px;letter-spacing:.06em;text-transform:uppercase}
+.field{width:100%;background:#F9F8F5;border:1px solid #DDD;border-radius:6px;padding:7px 10px;color:#1A1A1A;font-size:15px;outline:none}
+.field:focus{border-color:#8B6220}
+.flabel{font-size:16px;color:#333;letter-spacing:.13em;text-transform:uppercase;display:block;margin-bottom:3px}
+.pbar{height:5px;background:#EEE;border-radius:3px;overflow:hidden;margin-top:3px}
+.pfill{height:100%;border-radius:3px;transition:width .4s}
+.crow{display:flex;align-items:flex-start;gap:9px;padding:7px 9px;border-radius:5px;cursor:pointer;border:1px solid #EEE;background:#FAFAF8;margin-bottom:4px;transition:all .15s}
+.crow:hover{border-color:#8B6220;background:#FDF9F3}
+.crow.done{background:#F0FAF4;border-color:#B7DFCA}
+.cbox{width:17px;height:17px;border-radius:4px;border:2px solid #CCC;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;transition:all .15s}
+.cbox.done{background:#27AE60;border-color:#27AE60}
+.cbox svg{display:none}.cbox.done svg{display:block}
+.ctext{font-size:15px;color:#444;line-height:1.4;flex:1}
+.crow.done .ctext{color:#333;text-decoration:line-through}
+.daybtn{background:#fff;border:1px solid #DDD;border-radius:7px;padding:6px 8px;font-size:17px;transition:all .2s;text-align:center;cursor:pointer;min-width:74px}
+.daybtn.active{background:#8B6220;color:#fff;border-color:#8B6220}
+.stbtn{border-radius:7px;padding:9px 11px;font-size:17px;font-weight:bold;border:2px solid transparent;transition:all .2s;text-align:left;cursor:pointer;min-width:115px}
+.stbtn.active{color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.ecard{background:#fff;border:1px solid #E8E4DC;border-radius:8px;padding:11px;cursor:pointer;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.ecard:hover{box-shadow:0 4px 14px rgba(0,0,0,.1);transform:translateY(-1px)}
+.backbtn{background:none;border:none;color:#8B6220;font-size:17px;letter-spacing:.1em;padding:0;margin-bottom:12px;display:block}
+.barcont{flex:1;height:19px;background:#EEE;border-radius:4px;overflow:hidden}
+.barfill{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;transition:width .5s;font-size:16px;color:#fff;font-weight:bold}
+textarea.field{resize:vertical;line-height:1.5}
+.mbtn{background:#F7F6F2;color:#444;border:1px solid #DDD;border-radius:4px;padding:5px 9px;font-size:17px;transition:all .15s}
+.mbtn.active{background:#8B6220;color:#fff;border-color:#8B6220}
+.prod-inp{width:82px;text-align:center;font-size:19px;font-weight:bold;border:2px solid #DDD;border-radius:7px;padding:6px;background:#FAFAF8;outline:none}
+.prod-inp:focus{border-color:#8B6220}
+.stitle{font-size:16px;color:#444;letter-spacing:.12em;text-transform:uppercase;margin:11px 0 6px;padding-bottom:4px;border-bottom:1px solid #EEE}
+.rbtn{background:#F7F6F2;border:1px solid #DDD;border-radius:5px;padding:5px 10px;font-size:17px;cursor:pointer;transition:all .15s;color:#222}
+.rbtn.sel{background:#8B6220;color:#fff;border-color:#8B6220}
+.rbtn.sel-green{background:#27AE60;color:#fff;border-color:#27AE60}
+.rbtn.sel-red{background:#E74C3C;color:#fff;border-color:#E74C3C}
+.save-badge{position:fixed;bottom:14px;right:14px;background:#27AE60;color:#fff;padding:6px 12px;border-radius:20px;font-size:17px;opacity:0;transition:opacity .4s;pointer-events:none;z-index:999}
+.waste-inp{width:68px;text-align:center;font-size:16px;font-weight:bold;border:1px solid #DDD;border-radius:5px;padding:5px;background:#FAFAF8;outline:none}
+.waste-inp:focus{border-color:#E74C3C}
+.inv-qty{width:60px;text-align:center;font-size:16px;border:1px solid #DDD;border-radius:4px;padding:4px 6px;background:#FAFAF8;outline:none}
+.inv-qty:focus{border-color:#8B6220}
+.inv-row{display:flex;align-items:center;gap:8px;padding:6px 9px;border:1px solid #EEE;border-radius:5px;margin-bottom:4px;background:#FAFAF8}
+.inv-row:hover{border-color:#8B6220;background:#FDF9F3}
+.loc-btn{border-radius:6px;padding:7px 13px;font-size:15px;font-weight:bold;border:2px solid transparent;transition:all .2s;cursor:pointer}
+.loc-btn.active{color:#fff}
+/* Schedule grid */
+.sch-grid{display:grid;grid-template-columns:140px repeat(7,1fr);gap:2px;font-size:16px;min-width:700px}
+.sch-h{background:#8B6220;color:#fff;padding:5px 4px;text-align:center;border-radius:3px;font-weight:bold}
+.sch-name{background:#fff;border:1px solid #E8E4DC;padding:5px 6px;border-radius:3px;font-size:16px;color:#333;font-weight:bold}
+.sch-cell{padding:4px 2px;text-align:center;border-radius:3px;font-size:15px;line-height:1.3}
+.sch-off{background:#F5F5F5;color:#444}
+.sch-am{background:#FDF9F3;color:#8B6914;border:1px solid #E8D5A3}
+.sch-pm{background:#F3F6FD;color:#1A4A8B;border:1px solid #A3C0E8}
+.sch-late{background:#FDF3F3;color:#8B1A1A;border:1px solid #E8A3A3}
+.sch-grp{grid-column:1/-1;background:#F0EDE6;padding:5px 8px;border-radius:4px;font-size:16px;color:#8B6914;letter-spacing:.1em;text-transform:uppercase;font-weight:bold;margin-top:5px}
+.sec-toggle{width:100%;background:none;border:none;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;}
+.sec-toggle .arr{font-size:17px;color:#8B6220;transition:transform .25s;display:inline-block;margin-left:8px;flex-shrink:0;}
+.sec-toggle.open .arr{transform:rotate(90deg);}
+.sec-body{overflow:hidden;transition:max-height .35s ease,opacity .25s ease;max-height:0;opacity:0;pointer-events:none;}
+.sec-body.open{max-height:9999px;opacity:1;pointer-events:auto;}
+</style>
+</head>
+<body>
+<div id="save-badge" class="save-badge">✓ Saved</div>
+
+<div class="nav">
+  <div><div class="nav-logo">LAPIS <span style="color:#8B6220;font-weight:normal">Kitchen OS</span></div><div class="nav-sub">BOH Management</div></div>
+  <div style="display:flex;gap:3px;flex-wrap:wrap;align-items:center">
+    <button class="nbtn active" onclick="showView('staff')">Staff</button>
+    <button class="nbtn" onclick="showView('schedule')">Schedule</button>
+    <button class="nbtn" onclick="showView('stations')">Stations</button>
+    <button class="nbtn" onclick="showView('delivery')">Delivery</button>
+    <button class="nbtn" onclick="showView('inventory')">Inventory</button>
+    <button class="nbtn" onclick="showView('actions')">Actions</button>
+    <button class="nbtn" onclick="showView('chart')">Chart</button>
+    <button class="nbtn" onclick="showView('add')" style="background:#8B6220;color:#fff;border-color:#8B6220">+ Add</button>
+  </div>
+</div>
+
+<!-- STAFF -->
+<div id="view-staff" class="page active">
+  <p class="plabel">Lapis Restaurant — BOH</p>
+  <h1 class="ptitle">Staff Overview</h1>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <input class="field" id="search" placeholder="Search name, station, role..." oninput="renderStaff()" style="flex:1;max-width:270px"/>
+    <select class="field" id="fshift" onchange="renderStaff()" style="width:auto"><option value="All">All Shifts</option><option>AM</option><option>PM</option></select>
+    <select class="field" id="fst" onchange="renderStaff()" style="width:auto"><option value="All">All Stations</option></select>
+  </div>
+  <div id="staff-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(242px,1fr));gap:9px"></div>
+</div>
+
+<!-- SCHEDULE -->
+<div id="view-schedule" class="page" style="max-width:1100px">
+  <p class="plabel">Week of May 25–31, 2026</p>
+  <h1 class="ptitle">BOH Schedule</h1>
+  <div style="background:#FDF9F3;border:1px solid #E8D5A3;border-radius:7px;padding:10px 13px;font-size:17px;color:#8B6914;margin-bottom:14px">
+    <strong>Legend:</strong>
+    <span style="background:#FDF9F3;color:#8B6914;border:1px solid #E8D5A3;padding:2px 7px;border-radius:3px;margin:0 4px;font-size:16px">AM shift</span>
+    <span style="background:#F3F6FD;color:#1A4A8B;border:1px solid #A3C0E8;padding:2px 7px;border-radius:3px;margin:0 4px;font-size:16px">PM shift</span>
+    <span style="background:#FDF3F3;color:#8B1A1A;border:1px solid #E8A3A3;padding:2px 7px;border-radius:3px;margin:0 4px;font-size:16px">Late/Split</span>
+    <span style="background:#F5F5F5;color:#444;padding:2px 7px;border-radius:3px;margin:0 4px;font-size:16px">Off</span>
+  </div>
+  <div style="overflow-x:auto"><div class="sch-grid" id="schedule-grid"></div></div>
+</div>
+
+<!-- STATIONS -->
+<div id="view-stations" class="page">
+  <p class="plabel">Week of May 25–31, 2026</p>
+  <h1 class="ptitle">Stations</h1>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px" id="st-btns"></div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px" id="day-btns"></div>
+  <div id="st-header" style="margin-bottom:10px"></div>
+  <div id="emp-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:9px"></div>
+</div>
+
+<!-- PROFILE -->
+<div id="view-profile" class="page">
+  <button class="backbtn" id="prof-back" onclick="showView('stations')">← Back</button>
+  <div id="profile-content"></div>
+</div>
+
+<!-- DELIVERY -->
+<div id="view-delivery" class="page" style="max-width:720px">
+  <p class="plabel">Logistics — Olivier</p>
+  <h1 class="ptitle">Delivery Log</h1>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px" id="del-day-btns"></div>
+  <div id="delivery-content"></div>
+</div>
+
+<!-- INVENTORY -->
+<div id="view-inventory" class="page">
+  <p class="plabel">Lapis Restaurant</p>
+  <h1 class="ptitle">Inventory</h1>
+
+  <!-- Location tabs -->
+  <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="loc-btn active" id="loc-kitchen" onclick="selLoc('kitchen',this)" style="background:#8B6220;border-color:#8B6220;color:#fff">🍳 Kitchen</button>
+    <button class="loc-btn" id="loc-basement" onclick="selLoc('basement',this)" style="background:#fff;border-color:#7F8C8D;color:#7F8C8D">🏗️ Basement</button>
+    <button class="loc-btn" id="loc-1819" onclick="selLoc('1819',this)" style="background:#fff;border-color:#2980B9;color:#2980B9">🏢 1819</button>
+  </div>
+
+  <!-- Category tabs -->
+  <div style="display:flex;gap:5px;margin-bottom:13px;flex-wrap:wrap" id="inv-cat-tabs"></div>
+
+  <!-- Date -->
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px" id="inv-day-btns"></div>
+
+  <div id="inv-content"></div>
+</div>
+
+<!-- ACTIONS -->
+<div id="view-actions" class="page" style="max-width:720px">
+  <p class="plabel">Daily Operations</p>
+  <h1 class="ptitle">Actions</h1>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px" id="act-day-btns"></div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="stitle" style="margin-top:0">❄️ Refrigerator Check + HACCP Cooling Log — <span id="act-day-label"></span></div>
+    <div style="font-size:16px;color:#8B6914;background:#FDF9F3;border:1px solid #E8D5A3;border-radius:5px;padding:6px 10px;margin-bottom:8px">HACCP Cooling Log: All cooked items must reach 40°F within 4 hours. Log Start Temp, Final Temp, Time, and Employee Initials.</div>
+    <div id="fridge-checks"></div>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div class="stitle" style="margin-top:0">✅ Custom Actions</div>
+    <div id="custom-actions-list"></div>
+    <div style="display:flex;gap:7px;margin-top:8px">
+      <input class="field" id="new-action-text" placeholder="Add a new action item..."/>
+      <button onclick="addCustomAction()" style="background:#8B6220;border:none;border-radius:6px;padding:7px 12px;color:#fff;font-size:17px;white-space:nowrap">+ Add</button>
+    </div>
+  </div>
+  <div class="card"><div class="stitle" style="margin-top:0">📝 Notes</div><textarea class="field" id="act-notes" rows="3" placeholder="General notes for this day..." oninput="saveActNotes()"></textarea></div>
+</div>
+
+<!-- CHART -->
+<div id="view-chart" class="page">
+  <p class="plabel">Performance</p>
+  <h1 class="ptitle">Productivity Chart</h1>
+  <div style="background:#FDF9F3;border:1px solid #E8D5A3;border-radius:7px;padding:9px 13px;margin-bottom:12px;font-size:16px;color:#8B6914;line-height:1.8">
+    <strong>Score formula :</strong>
+    Line stations (Grill, Salad, Middle, Dumplings, Dishwasher, Deep Cleaning) : <strong>Protocol 55% + Production 45%</strong>
+    &nbsp;|&nbsp;
+    Prep / AM : <strong>Protocol 30% + Production 70%</strong>
+  </div>
+  <div style="display:flex;gap:5px;margin-bottom:12px">
+    <button class="mbtn active" onclick="setMetric('overall',this)">Overall</button>
+    <button class="mbtn" onclick="setMetric('protocol',this)">Protocol</button>
+    <button class="mbtn" onclick="setMetric('production',this)">Production</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px" id="chart-sum"></div>
+  <div class="card" id="chart-bars" style="margin-bottom:12px"></div>
+  <div style="font-size:16px;color:#333;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid #EEE;padding-bottom:4px">Station Averages</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:7px" id="st-avgs"></div>
+</div>
+
+<!-- ADD -->
+<div id="view-add" class="page" style="max-width:460px">
+  <p class="plabel">Add to Lapis</p>
+  <h1 class="ptitle">New Entry</h1>
+  <div style="display:flex;gap:5px;margin-bottom:14px">
+    <button class="mbtn active" onclick="switchAdd('emp',this)">Employee</button>
+    <button class="mbtn" onclick="switchAdd('action',this)">Action Template</button>
+    <button class="mbtn" onclick="switchAdd('product',this)">Inventory Item</button>
+  </div>
+  <div id="add-emp-form">
+    <div style="margin-bottom:9px"><label class="flabel">Full Name</label><input class="field" id="nn" placeholder="Last, First"/></div>
+    <div style="margin-bottom:9px"><label class="flabel">Station</label><select class="field" id="ns" onchange="updateHint()"></select><div id="nhint" style="font-size:16px;margin-top:3px;color:#8B6220;font-weight:bold"></div></div>
+    <div style="margin-bottom:9px"><label class="flabel">Shift</label><select class="field" id="nsh"><option>AM</option><option>PM</option></select></div>
+    <div style="margin-bottom:9px"><label class="flabel">Role / Tasks</label><input class="field" id="nr" placeholder="e.g. Prep dumplings"/></div>
+    <div style="margin-bottom:9px"><label class="flabel">Hourly Rate ($)</label><input class="field" id="nrate" type="number" placeholder="17.00"/></div>
+    <div style="margin-bottom:14px"><label class="flabel">Notes</label><textarea class="field" id="nnote" rows="2" placeholder="Any note..."></textarea></div>
+    <button onclick="addEmp()" style="width:100%;background:#8B6220;border:none;border-radius:6px;padding:10px;color:#fff;font-size:15px;letter-spacing:.1em;text-transform:uppercase">Add Employee</button>
+  </div>
+  <div id="add-action-form" style="display:none">
+    <div style="margin-bottom:9px"><label class="flabel">Action Description</label><input class="field" id="act-desc" placeholder="e.g. Check walk-in temperature"/></div>
+    <div style="margin-bottom:14px"><label class="flabel">Category</label>
+      <select class="field" id="act-cat"><option value="hygiene">🧴 Hygiene</option><option value="fridge">❄️ Refrigerator</option><option value="production">📦 Production</option><option value="safety">⚠️ Safety</option><option value="other">📋 Other</option></select>
+    </div>
+    <button onclick="addActionTemplate()" style="width:100%;background:#8B6220;border:none;border-radius:6px;padding:10px;color:#fff;font-size:15px;letter-spacing:.1em;text-transform:uppercase">Add Action Template</button>
+  </div>
+  <div id="add-product-form" style="display:none">
+    <div style="margin-bottom:9px"><label class="flabel">Product Name</label><input class="field" id="prod-name" placeholder="e.g. Olive Oil"/></div>
+    <div style="margin-bottom:9px"><label class="flabel">Category</label>
+      <select class="field" id="prod-cat">
+        <option value="vegetables">🥦 Vegetables / Fruits</option>
+        <option value="meat">🥩 Meat / Poultry / Seafood</option>
+        <option value="dairy">🥛 Dairy Products</option>
+        <option value="dry">🌾 Dry Goods / Spices</option>
+        <option value="frozen">🧊 Frozen Foods</option>
+        <option value="cleaning">🧴 Cleaning Products</option>
+        <option value="supplies">📦 Supplies / Paper Goods</option>
+        <option value="other">📋 Other</option>
+      </select>
+    </div>
+    <div style="margin-bottom:9px"><label class="flabel">Location</label>
+      <select class="field" id="prod-loc"><option value="kitchen">🍳 Kitchen</option><option value="basement">🏗️ Basement</option><option value="1819">🏢 1819</option></select>
+    </div>
+    <div style="margin-bottom:9px"><label class="flabel">Par Level (unit)</label><input class="field" id="prod-par" placeholder="e.g. 3 cases"/></div>
+    <div style="margin-bottom:14px"><label class="flabel">Supplier</label><input class="field" id="prod-supplier" placeholder="e.g. Restaurant Depot"/></div>
+    <button onclick="addProduct()" style="width:100%;background:#8B6220;border:none;border-radius:6px;padding:10px;color:#fff;font-size:15px;letter-spacing:.1em;text-transform:uppercase">Add Product</button>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE + LOCAL SAVE ────────────────────────────────────────────────────
+const SB_URL="https://dqqxpbkbnjtovkbsqvlu.supabase.co";
+const SB_KEY="sb_publishable_v7PhVmtWDY0CTc9lLLBJTg_QL9vPWAv";
+const SB_H={apikey:SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
+const WEEK_LABEL="May 25-31 2026";
+function showSaved(){const b=document.getElementById('save-badge');b.style.opacity='1';setTimeout(()=>b.style.opacity='0',1400);}
+function save(k,v){try{localStorage.setItem('lapis_'+k,JSON.stringify(v));}catch(e){}}
+function load(k,d){try{const v=localStorage.getItem('lapis_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
+async function sbGet(table,params=''){try{const r=await fetch(SB_URL+'/rest/v1/'+table+(params?'?'+params:''),{headers:SB_H});return r.ok?r.json():null;}catch(e){return null;}}
+async function sbUpsert(table,data){try{const r=await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...SB_H,Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(data)});return r.ok;}catch(e){return false;}}
+let _syncT=null;
+function scheduleSyncToSupabase(){clearTimeout(_syncT);_syncT=setTimeout(syncToSupabase,1800);}
+async function syncToSupabase(){
+  const badge=document.getElementById('save-badge');
+  try{
+    await sbUpsert('employees',emps.map(e=>{return{id:e.id,name:e.name,station:e.st,shift:e.sh,role:e.role||'',note:e.note||''}}));
+    const rows=[];emps.forEach(e=>{(SD[e.id]||[]).forEach((d,di)=>{if(!d)return;rows.push({employee_id:e.id,week_label:WEEK_LABEL,day_index:di,prod_items:JSON.stringify(d.prodItems||[]),protocol:JSON.stringify(d.protocol||[]),waste:JSON.stringify(d.waste||[]),remarks:d.remarks||'',working:!!d.working,sched:d.sched||''});});});
+    if(rows.length)await sbUpsert('daily_data',rows);
+    await sbUpsert('deliveries',WEEK.map((w,di)=>{return{week_label:WEEK_LABEL,day_index:di,deliveries:JSON.stringify((DEL[di]||{}).deliveries||[])}}));
+    await sbUpsert('actions',WEEK.map((w,di)=>{return{week_label:WEEK_LABEL,day_index:di,fridge:JSON.stringify(ACT_FRIDGE[di]||{}),custom:JSON.stringify(ACT_CUSTOM[di]||[]),notes:ACT_NOTES[di]||''}}));
+    const invRows=[];WEEK.forEach((w,di)=>{Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{invRows.push({week_label:WEEK_LABEL,day_index:di,item_id:id,qty:d.qty||'',status:d.status||'',notes:d.notes||''});});});
+    if(invRows.length)await sbUpsert('inventory',invRows);
+    if(badge){badge.textContent='✓ Synced';badge.style.background='#27AE60';badge.style.opacity='1';setTimeout(()=>{badge.textContent='✓ Saved';badge.style.opacity='0';},1500);}
+  }catch(err){
+    if(badge){badge.textContent='⚠ Local only';badge.style.background='#E67E22';badge.style.opacity='1';setTimeout(()=>badge.style.opacity='0',2000);}
+  }
+}
+async function loadFromSupabase(){
+  const badge=document.getElementById('save-badge');
+  badge.textContent='⟳ Loading...';badge.style.background='#2980B9';badge.style.opacity='1';
+  try{
+    const empData=await sbGet('employees','order=id');
+    if(empData&&empData.length){empData.forEach(row=>{const e=emps.find(x=>x.id===row.id);if(e){e.name=row.name;e.st=row.station;e.sh=row.shift;e.role=row.role;e.note=row.note;}});}
+    const daily=await sbGet('daily_data','week_label=eq.'+encodeURIComponent(WEEK_LABEL)+'&order=employee_id,day_index');
+    if(daily&&daily.length){daily.forEach(row=>{if(!SD[row.employee_id]||!SD[row.employee_id][row.day_index])return;const d=SD[row.employee_id][row.day_index];try{d.prodItems=JSON.parse(row.prod_items||'[]');d.protocol=JSON.parse(row.protocol||'[]');d.waste=JSON.parse(row.waste||'[]');d.remarks=row.remarks||'';d.working=row.working;d.sched=row.sched||d.sched;}catch(e){}});}
+    const del=await sbGet('deliveries','week_label=eq.'+encodeURIComponent(WEEK_LABEL));
+    if(del&&del.length){del.forEach(row=>{try{DEL[row.day_index]={deliveries:JSON.parse(row.deliveries||'[]')};}catch(e){}});}
+    const act=await sbGet('actions','week_label=eq.'+encodeURIComponent(WEEK_LABEL));
+    if(act&&act.length){act.forEach(row=>{try{ACT_FRIDGE[row.day_index]=JSON.parse(row.fridge||'{}');ACT_CUSTOM[row.day_index]=JSON.parse(row.custom||'[]');ACT_NOTES[row.day_index]=row.notes||'';}catch(e){}});}
+    const inv=await sbGet('inventory','week_label=eq.'+encodeURIComponent(WEEK_LABEL));
+    if(inv&&inv.length){inv.forEach(row=>{if(!INV_DAY[row.day_index])INV_DAY[row.day_index]={};INV_DAY[row.day_index][row.item_id]={qty:row.qty,status:row.status,notes:row.notes};}); }
+    badge.textContent='✓ Connected';badge.style.background='#27AE60';badge.style.opacity='1';
+    setTimeout(()=>badge.style.opacity='0',1500);
+  }catch(err){
+    badge.textContent='⚠ Offline';badge.style.background='#E67E22';badge.style.opacity='1';
+    setTimeout(()=>badge.style.opacity='0',2000);
+  }
+  renderStaff();
+}
+
+// ── CORE DATA ─────────────────────────────────────────────────────────────────
+const ST={
+  "Dumplings":{target:150,unit:"pieces",color:"#E67E22"},
+  "Salad":{target:100,unit:"plates",color:"#27AE60"},
+  "Grill":{target:80,unit:"portions",color:"#C0392B"},
+  "Middle Line":{target:100,unit:"plates",color:"#2980B9"},
+  "Prep / AM":{target:30,unit:"batches",color:"#8E44AD"},
+  "Dishwasher":{target:100,unit:"racks",color:"#16A085"},
+  "Deep Cleaning":{target:1,unit:"session",color:"#7F8C8D"},
+};
+const WEEK=[
+  {short:"Mon",full:"Monday May 25"},
+  {short:"Tue",full:"Tuesday May 26"},
+  {short:"Wed",full:"Wednesday May 27"},
+  {short:"Thu",full:"Thursday May 28"},
+  {short:"Fri",full:"Friday May 29"},
+  {short:"Sat",full:"Saturday May 30"},
+  {short:"Sun",full:"Sunday May 31"},
+];
+const PROD_ITEMS={
+  "Dumplings":[
+    {label:"Aushak (leek dumplings)",  target:60,  unit:"pieces"},
+    {label:"Mantoo Beef",              target:60,  unit:"pieces"},
+    {label:"Mantoo Shrimp",            target:30,  unit:"pieces"},
+    {label:"Sambossa Beef",            target:20,  unit:"pieces"},
+    {label:"Sambossa Shrimp",          target:15,  unit:"pieces"},
+    {label:"Sambossa Spinach",         target:20,  unit:"pieces"},
+    {label:"Bolanee Potato",           target:15,  unit:"pieces"},
+    {label:"Bolanee Leek",             target:15,  unit:"pieces"},
+    {label:"Bolanee Pumpkin",          target:12,  unit:"pieces"},
+    {label:"Bolanee Beef",             target:15,  unit:"pieces"},
+    {label:"Orange Cake portions",     target:12,  unit:"portions"},
+  ],
+  "Salad":[
+    {label:"Kale Salad",               target:20,  unit:"plates"},
+    {label:"Beet Salad",               target:20,  unit:"plates"},
+    {label:"Salata",                   target:20,  unit:"plates"},
+    {label:"Kabob Salad (pickled)",    target:30,  unit:"portions"},
+    {label:"Buranee Banjan (eggplant)",target:15,  unit:"portions"},
+    {label:"Buranee Kadoo (pumpkin)",  target:15,  unit:"portions"},
+    {label:"Shamee Kabob",             target:20,  unit:"pieces"},
+    {label:"Pakawra",                  target:20,  unit:"pieces"},
+    {label:"Bolanees (all types)",     target:40,  unit:"pieces"},
+    {label:"Aush Soup",                target:15,  unit:"cups"},
+    {label:"Nask Soup",                target:10,  unit:"cups"},
+    {label:"Chicken Soup",             target:10,  unit:"cups"},
+  ],
+  "Grill":[
+    {label:"Lamb Skewers",             target:25,  unit:"portions"},
+    {label:"Beef Skewers",             target:20,  unit:"portions"},
+    {label:"Chicken Skewers",          target:25,  unit:"portions"},
+    {label:"Fish (Rainbow Trout)",     target:12,  unit:"portions"},
+    {label:"Mixed Grill",              target:8,   unit:"portions"},
+    {label:"Rice (palow) batches",     target:5,   unit:"batches"},
+    {label:"Naan",                     target:60,  unit:"pieces"},
+  ],
+  "Middle Line":[
+    {label:"Lubya (green beans)",      target:15,  unit:"portions"},
+    {label:"Bamya (okra)",             target:15,  unit:"portions"},
+    {label:"Samaruak",                 target:10,  unit:"portions"},
+    {label:"Sabzi (spinach)",          target:12,  unit:"portions"},
+    {label:"Zardak (carrots/raisins)", target:12,  unit:"portions"},
+    {label:"Showla (rice & lentils)",  target:10,  unit:"portions"},
+    {label:"Dall",                     target:10,  unit:"portions"},
+    {label:"Palow with Meat",          target:20,  unit:"plates"},
+    {label:"Kofta",                    target:15,  unit:"portions"},
+    {label:"Morgh Qurama (chicken)",   target:12,  unit:"portions"},
+    {label:"Lamb Shank",               target:8,   unit:"portions"},
+    {label:"French Fries",             target:30,  unit:"portions"},
+    {label:"Carrot and Raisins (side)",target:20,  unit:"portions"},
+    {label:"Salad for Kabob",          target:30,  unit:"portions"},
+  ],
+  "Prep / AM":[
+    // ── Bolanees (Sheet: BOLANEE DEMPLINGS — Par 150 each)
+    {label:"Bolanee Leek",             target:150, unit:"each"},
+    {label:"Bolanee Potato",           target:150, unit:"each"},
+    {label:"Bolanee Pumpkin",          target:150, unit:"each"},
+    {label:"Bolanee Beef",             target:150, unit:"each"},
+    // ── Dumplings (Sheet: BOLANEE DEMPLINGS — Par 1400 each)
+    {label:"Mantoo Beef",              target:1400,unit:"each"},
+    {label:"Mantoo Shrimp",            target:1400,unit:"each"},
+    {label:"Aushak Leek",              target:1400,unit:"each"},
+    // ── Sambossa (Sheet: BOLANEE DEMPLINGS)
+    {label:"Sambossa Beef",            target:50,  unit:"each"},
+    {label:"Sambossa Shrimp",          target:50,  unit:"each"},
+    {label:"Sambossa Spinach",         target:50,  unit:"each"},
+    {label:"Naan (prepped)",           target:60,  unit:"pieces"},
+    // ── Vegetarian Dishes (Sheet: AM PREP SHEET — Liliana/Orbelina)
+    {label:"Sabzi (Spinach)",          target:5,   unit:"orders"},
+    {label:"Bamia (Okra)",             target:5,   unit:"orders"},
+    {label:"Lubya (Red Kidney Beans)", target:5,   unit:"orders"},
+    {label:"Zardak (Carrots)",         target:5,   unit:"orders"},
+    {label:"Gullpee (Cauliflower)",    target:5,   unit:"orders"},
+    {label:"Dall (Lentil)",            target:5,   unit:"orders"},
+    {label:"Samarok (Mushroom)",       target:5,   unit:"orders"},
+    {label:"Shola (Seven Beans)",      target:5,   unit:"orders"},
+    // ── Sauces (Sheet: AM PREP SHEET — Cristian A.)
+    {label:"Quinoa",                   target:5,   unit:"quarts"},
+    {label:"Sauce for Eggplant",       target:3,   unit:"quarts"},
+    {label:"Sauce for Pumpkin",        target:3,   unit:"quarts"},
+    {label:"Aushak Beef Sauce",        target:4,   unit:"quarts"},
+    {label:"Mantoo Sauce",             target:4,   unit:"quarts"},
+    {label:"Saffron Sauce",            target:2,   unit:"quarts"},
+    {label:"Red Chatnee",              target:2,   unit:"quarts"},
+    {label:"Green Chatnee",            target:2,   unit:"quarts"},
+    // ── Soups (Sheet: AM PREP SHEET)
+    {label:"Aush Soup (Veggi/Meat)",   target:5,   unit:"orders"},
+    {label:"Nask Soup",                target:5,   unit:"orders"},
+    {label:"Chicken Soup",             target:5,   unit:"orders"},
+    // ── Meat Dishes (Sheet: AM PREP SHEET — Liliana/Orbelina)
+    {label:"Qabuli Palow Lamb",        target:5,   unit:"orders"},
+    {label:"Lamb Shank",               target:5,   unit:"orders"},
+    {label:"Kofta (Beef Meatballs)",   target:5,   unit:"orders"},
+    {label:"Chicken Qurma",            target:5,   unit:"orders"},
+    // ── Kabobs & Prep (Sheet: AM PREP SHEET / AM prep list)
+    {label:"Chaplee Kabob",            target:5,   unit:"boxes"},
+    {label:"Shamee Kabob (pate)",      target:5,   unit:"boxes"},
+    {label:"Shornakhot",               target:3,   unit:"quarts"},
+    // ── Desserts (Sheet: AM PREP SHEET)
+    {label:"Rice Pudding (Sheer Berenj)",target:3, unit:"orders"},
+    {label:"Feerne",                   target:3,   unit:"orders"},
+    {label:"Halwa Semolina",           target:3,   unit:"orders"},
+    {label:"Orange Cake",              target:2,   unit:"portions"},
+    // ── Daily AM Prep Tasks (Sheet: AM prep list)
+    {label:"Pumpkin Peeling",          target:1,   unit:"batch"},
+    {label:"Eggplant Cutting",         target:1,   unit:"batch"},
+    {label:"Garlic Prep",              target:1,   unit:"batch"},
+    {label:"Ginger Prep",              target:1,   unit:"batch"},
+    {label:"Tomatoes (can blending)",  target:1,   unit:"batch"},
+    {label:"Dill Chop",                target:1,   unit:"batch"},
+    {label:"Mushroom Cut",             target:1,   unit:"batch"},
+    {label:"Veggies for Soup",         target:1,   unit:"batch"},
+    {label:"Cutting Meat for Kabobs",  target:1,   unit:"batch"},
+    {label:"Turshi Veggies",           target:1,   unit:"batch"},
+  ],
+  "Dishwasher":[
+    {label:"Racks washed",             target:100, unit:"racks"},
+    {label:"Dining room cleanings",    target:1,   unit:"session"},
+  ],
+  "Deep Cleaning":[
+    {label:"Deep clean sessions",      target:1,   unit:"session"},
+    {label:"Fryer oil changes",        target:1,   unit:"change"},
+  ],
+};
+
+const WASTE_ITEMS={
+  "Dumplings":["Uncooked dumplings (pieces)","Cooked unsold dumplings (pieces)","Dough scraps (g)","Orange cake portions"],
+  "Salad":["Grill salad portions","Leftover salad mix (g)","Unsold plated salads","Discarded vegetables (g)"],
+  "Grill":["Unsold meat portions","Unsold chicken portions","Unsold fish portions","Burnt / rejected items"],
+  "Middle Line":["Unsold plated dishes","Leftover sauces (ml)","Bread / bolani leftover","Discarded items"],
+  "Prep / AM":[
+    "Bolanee Leek leftover (each)",
+    "Bolanee Potato leftover (each)",
+    "Bolanee Pumpkin leftover (each)",
+    "Bolanee Beef leftover (each)",
+    "Mantoo Beef leftover (each)",
+    "Mantoo Shrimp leftover (each)",
+    "Aushak Leek leftover (each)",
+    "Sambossa leftover (each)",
+    "Sabzi leftover (portions)",
+    "Bamia leftover (portions)",
+    "Lubya leftover (portions)",
+    "Zardak leftover (portions)",
+    "Dall leftover (portions)",
+    "Shola leftover (portions)",
+    "Qabuli Palow leftover (portions)",
+    "Lamb Shank leftover (portions)",
+    "Kofta leftover (portions)",
+    "Chicken Qurma leftover (portions)",
+    "Aush Soup leftover (portions)",
+    "Nask Soup leftover (portions)",
+    "Chicken Soup leftover (portions)",
+    "Unused prepped meat / kabob (g)",
+    "Unused sauce discarded (quarts)",
+  ],
+  "Dishwasher":["Broken dishes","Broken glasses","Damaged utensils","Damaged trays"],
+  "Deep Cleaning":["Fryer oil changed (L)","Cleaning products used (units)","Damaged equipment noted"],
+};
+const PROTO={
+  "Grill":[
+    "OPENING: Check rice leftover — warm up in oven if available",
+    "OPENING: Wash and soak rice 10-15 min, then cook following recipe",
+    "OPENING: Prepare station with all needed tools and supplies",
+    "OPENING: Put charcoal on at 4pm — 1 hour before opening",
+    "OPENING: Make sure all meat needed for the night is at station",
+    "OPENING: Bring Naan to station — keep in plastic to stay fresh",
+    "OPENING: Meat marinated max 2 days — check dates",
+    "OPENING: Skewer all the meats before service",
+    "OPENING: Fix pickled salad for kabobs — follow recipe",
+    "OPENING: Red sanitation bucket placed by the sink",
+    "OPENING: Station clean and organized at all times",
+    "CLOSING: Clean the plate shelf",
+    "CLOSING: Clean fridge inside and around it",
+    "CLOSING: Clean rice pot inside and around it",
+    "CLOSING: Clean rice pot shelf",
+    "CLOSING: Clean charcoal grill and remove ashes",
+    "CLOSING: Clean the shelf above the grill",
+    "CLOSING: Clean the sink and shelf above",
+    "CLOSING: Clean all spice and oil containers",
+    "CLOSING: Leftover rice labeled, dated, placed in cooler",
+    "CLOSING: All kabob meats marinated in own container, labeled, dated for next day",
+  ],
+  "Middle Line":[
+    "OPENING: Family dinner ready at 4:30pm",
+    "OPENING: Check all sauces, refill station — use old date first",
+    "OPENING: Prep carrots and raisins — see recipe",
+    "OPENING: Prep kabob salad — see recipe",
+    "OPENING: Spoons and scissors in hot water",
+    "OPENING: Extra virgin olive oil, dry dill, dry mint, crushed cumin ready for garnish",
+    "OPENING: Warm food per order only — avoid waste",
+    "OPENING: Prepare French fries for the shift",
+    "OPENING: Report 86 items to the Manager",
+    "CLOSING: Change containers for each sauce to clean ones on line fridge",
+    "CLOSING: Clean fridge inside and outside",
+    "CLOSING: Clean shelves above the fridge",
+    "CLOSING: Wipe all spice shakers, refill and cover with plastic",
+    "CLOSING: All sauces in walk-in cooler covered and organized",
+    "CLOSING: Wipe screen with clean towel — back of screen with Clorox wipes",
+    "CLOSING: Pull out stove top, clean and change aluminum",
+    "CLOSING: Clean inside of oven and racks",
+    "CLOSING: Clean around deep fryer — remove food from oil and cover",
+  ],
+  "Salad":[
+    "OPENING: Check freezer — enough bolanees and dumplings (use old date first)",
+    "OPENING: Bake bolanees at 350F / 7 min — not too many, not overcooked",
+    "OPENING: Once cool, bolanees go in walk-in — keep one tray at line",
+    "OPENING: Prep and bake eggplant (brush oil, 350F / 8 min) and pumpkin (12 min, 1 cup water per tray)",
+    "OPENING: Eggplant and pumpkin in cooler once ready — one tray at line",
+    "OPENING: Prep dumplings at 5pm — enough for shift only, steam 15 min",
+    "OPENING: Warm sauces for tonight only — not too much",
+    "OPENING: Prep sour cream, salata — date each, clean container every refill",
+    "OPENING: Prep salad station: nuts, beets, kale, arugula, red cabbage, fennel, dates, lemon",
+    "OPENING: Prep pakawra, sambosas, shamee kabob — cool down then in cooler",
+    "OPENING: Red sanitation bucket at station",
+    "OPENING: Station clean and organized at all times",
+    "CLOSING: Wrap extra bolanees in plastic wrap — date them",
+    "CLOSING: Clean all salad containers, nut containers — cover",
+    "CLOSING: Refrigerate and cover eggplant and pumpkin — label and date",
+    "CLOSING: Clean plate shelves",
+    "CLOSING: Clean fridge inside and outside",
+    "CLOSING: Clean stove tops and oven — change aluminum",
+    "CLOSING: Clean screen with clean towel — back wires with Clorox wipes",
+    "CLOSING: Clean and wipe dumpling freezer and electric burners",
+  ],
+  "Dumplings":[
+    "OPENING: Check freezer — enough bolanees and dumplings (use old date first)",
+    "OPENING: Bake bolanees at 350F / 7 min — not too many, not overcooked",
+    "OPENING: Once cool, bolanees go in walk-in — keep one tray at line",
+    "OPENING: Prep dumplings at 5pm — enough for shift only, steam 15 min max",
+    "OPENING: Do not overcook dumplings",
+    "OPENING: Warm sauces for tonight only — not too much",
+    "OPENING: Prep sour cream, salata — date each, clean container every refill",
+    "OPENING: Prep pakawra, sambosas, shamee kabob — cool down then in cooler",
+    "OPENING: Red sanitation bucket at station",
+    "OPENING: Station clean and organized at all times",
+    "CLOSING: Wrap extra bolanees in plastic wrap — date them",
+    "CLOSING: Clean all containers and covers",
+    "CLOSING: Clean fridge inside and outside",
+    "CLOSING: Clean plate shelves",
+    "CLOSING: Clean stove tops and oven — change aluminum",
+    "CLOSING: Clean screen with clean towel — back wires with Clorox wipes",
+    "CLOSING: Clean and wipe dumpling freezer and electric burners",
+  ],
+  "Prep / AM":[
+    // ── Opening / Hygiene
+    "Red sanitation bucket at station before starting",
+    "Check all prep lists (AM PREP SHEET + BOLANEE sheet) before starting",
+    "FIFO respected — older product used first, all labeled and dated",
+    "Refrigerator temperature checked (0-4C)",
+    "All items in fridge labeled, dated, and organized",
+    "Food properly cooled before bagging — never bag hot food",
+    "Cutting boards and knives sanitized between each protein",
+    "Walk-in organized — meat in proper containers, dated, stored correctly",
+    // ── Bolanees (Dalila: Leek + Potato | Maria: Pumpkin | Sayda: Beef — Par 150 each)
+    "Bolanee Leek prepped — portioned and bagged (Dalila — par 150)",
+    "Bolanee Potato prepped — portioned and bagged (Dalila — par 150)",
+    "Bolanee Pumpkin prepped — portioned and bagged (Maria — par 150)",
+    "Bolanee Beef prepped — portioned and bagged (Sayda — par 150)",
+    // ── Dumplings / Sambossa (Mohamed / Maria)
+    "Mantoo Beef prepped (par 1400)",
+    "Mantoo Shrimp prepped (par 1400)",
+    "Aushak Leek prepped (par 1400)",
+    "Sambossa Beef prepped (Mohamed)",
+    "Sambossa Shrimp prepped (Mohamed)",
+    "Sambossa Spinach prepped (Maria)",
+    "Naan prepped (Mohamed)",
+    "Pumpkin peeling done (Mohamed / Haroon — every day)",
+    // ── Vegetarian Dishes (Liliana / Orbelina)
+    "Sabzi (Spinach) cooked and cooled",
+    "Bamia (Okra) cooked and cooled",
+    "Lubya (Red Kidney Beans) cooked and cooled",
+    "Zardak (Carrots) cooked and cooled",
+    "Gullpee (Cauliflower) cooked and cooled",
+    "Dall (Lentil) cooked and cooled",
+    "Samarok (Mushroom) cooked and cooled",
+    "Shola (Seven Beans) cooked and cooled",
+    // ── Soups (Liliana / Orbelina)
+    "Aush Soup (Veggi/Meat) cooked and cooled",
+    "Nask Soup cooked and cooled",
+    "Chicken Soup cooked and cooled",
+    // ── Meat Dishes (Liliana / Orbelina)
+    "Qabuli Palow Lamb cooked and cooled",
+    "Lamb Shank cooked and cooled",
+    "Kofta (Beef Meatballs) prepped (Rodolfo / Orbelina / Carman)",
+    "Chicken Qurma cooked and cooled",
+    // ── Sauces (Cristian A.)
+    "Quinoa cooked",
+    "Sauce for Eggplant prepped",
+    "Sauce for Pumpkin prepped",
+    "Aushak Beef Sauce prepped",
+    "Mantoo Sauce prepped",
+    "Saffron Sauce prepped",
+    "Red Chatnee prepped (Cristian)",
+    "Green Chatnee prepped (Bessy)",
+    // ── Kabobs & Prep (Apolee / Haroon / Carman)
+    "Chaplee Kabob prepped (Apolee)",
+    "Shamee Kabob (pate) prepped (Carman/Haroon — Tuesdays)",
+    "Cutting meat for kabobs done (Apolee / Haroon)",
+    "Shornakhot prepped (Rodolfo)",
+    // ── Daily Tasks (Haroon / Bessy / Orbelina)
+    "Tomatoes (can blending) done (Bessy)",
+    "Cauliflower cut (Bessy / Orbelina)",
+    "Dill chop done (Bessy)",
+    "Mushroom cut done (Bessy)",
+    "Dall wash done (Bessy)",
+    "Garlic prepped (Haroon)",
+    "Ginger prepped (Haroon)",
+    "Eggplant cut (Carman)",
+    "Veggies for soup prepped (Bessy / Orbelina)",
+    "Turshi veggies prepped (Carman / Orbelina)",
+    // ── Desserts (Ana / Liliana / Orbelina)
+    "Rice Pudding (Sheer Berenj) prepped",
+    "Feerne prepped",
+    "Halwa Semolina prepped",
+    "Orange Cake prepped (Ana)",
+    // ── Closing
+    "All dishes labeled with name, date, and quantity",
+    "HACCP cooling log filled — temperature checked at start and end",
+    "Station cleaned, tools stored, surfaces sanitized at end of shift",
+  ],
+  "Dishwasher":[
+    "Dishwasher machine temperature and chemical levels checked",
+    "Proper wash / rinse / sanitize cycle followed for all items",
+    "Dirty and clean dishes separated at all times",
+    "Equipment cleaned (fryer, oven surfaces, grill exterior)",
+    "Dining room cleaning completed as assigned",
+    "Fryer oil checked — change if overdue",
+    "Waste bins emptied and relined",
+    "Floor swept and mopped under all stations",
+    "Handwashing station stocked (soap + paper towels)",
+    "Red sanitation bucket stocked and placed correctly",
+  ],
+  "Deep Cleaning":[
+    "Fryer oil changed and fryer cleaned thoroughly",
+    "Electric oven interior deep cleaned — racks cleaned",
+    "Stove tops pulled out — aluminum changed",
+    "All windows cleaned — dining room and kitchen",
+    "1819 space deep cleaned per weekly schedule",
+    "Dining room floor scrubbed — not just swept",
+    "All non-visible areas cleaned (under equipment, shelves, walls)",
+    "Proper cleaning products used — no cross-use",
+    "Deep clean checklist signed off by supervisor",
+  ],
+};
+const FRIDGE_ITEMS=[
+  {id:"f1",text:"Walk-in / fridge temperature logged (0-4C / 40F)"},
+  {id:"f2",text:"All containers have content name labels"},
+  {id:"f3",text:"All containers have date labels (prepared + use-by)"},
+  {id:"f4",text:"FIFO respected — oldest product in front, newest in back"},
+  {id:"f5",text:"No open containers or uncovered food"},
+  {id:"f6",text:"Raw proteins stored below cooked / ready-to-eat items"},
+  {id:"f7",text:"No expired or unlabeled items found"},
+  {id:"f8",text:"Fridge interior clean — no spills or residue"},
+  {id:"f9",text:"All meat in proper sealed containers"},
+  {id:"f10",text:"Fridge door seals intact and closing properly"},
+  {id:"f11",text:"HACCP: Sabzi / Spinach — cooled to 40F within 4 hrs, logged"},
+  {id:"f12",text:"HACCP: Bamia / Okra — cooled to 40F within 4 hrs, logged"},
+  {id:"f13",text:"HACCP: Lubya / Red Kidney Beans — cooled to 40F, logged"},
+  {id:"f14",text:"HACCP: Zardak / Carrots — cooled to 40F, logged"},
+  {id:"f15",text:"HACCP: Gullpee / Cauliflower — cooled to 40F, logged"},
+  {id:"f16",text:"HACCP: Dal / Lentil — cooled to 40F, logged"},
+  {id:"f17",text:"HACCP: Samarok / Mushroom — cooled to 40F, logged"},
+  {id:"f18",text:"HACCP: 16 Beans / Shola — cooled to 40F, logged"},
+  {id:"f19",text:"HACCP: Nask Soup — cooled to 40F, logged"},
+  {id:"f20",text:"HACCP: Chicken Soup — cooled to 40F, logged"},
+  {id:"f21",text:"HACCP: Qabuli Palow Lamb — cooled to 40F, logged"},
+  {id:"f22",text:"HACCP: Lamb Shank — cooled to 40F, logged"},
+  {id:"f23",text:"HACCP: Kofta / Beef Meatballs — cooled to 40F, logged"},
+  {id:"f24",text:"HACCP: Morgh Qorma / Chicken — cooled to 40F, logged"},
+];
+const TRANSFER_WINDOWS=[
+  {label:"9am–11am ✓",value:"9-11"},
+  {label:"11am–2pm ✓",value:"11-14"},
+  {label:"2pm–5pm",value:"14-17"},
+  {label:"5pm–9pm",value:"17-21"},
+  {label:"Other",value:"other"},
+];
+
+// ── SCHEDULE DATA ─────────────────────────────────────────────────────────────
+const SCHEDULE_GROUPS=[
+  {name:"🔥 Grill Team",rows:[
+    {name:"Santos, Jose",role:"Grill (Tue/Wed/Fri)·Mon/Thu lines",tasks:["3:30–11:30","2pm–11:30","2pm–11:30","3:30–11:30","2pm–11:30","Off","Off"]},
+    {name:"Bonilla, Ignacio",role:"Grill station",tasks:["2pm–11:30","Off","Off","2pm–11:30","Off","1pm–12:30","2pm–11:30"]},
+    {name:"Ventura, Rodolfo",role:"Lunch all stations·Sat/Sun brunch grill",tasks:["7am–3pm","Off","Off","7am–3pm","7am–3pm","8am–4pm","8am–4pm"]},
+  ]},
+  {name:"🥗 Salad / Middle Station",rows:[
+    {name:"Gricelda (Liza)",role:"Salad station",tasks:["Off","3:30–11:30","3:30–11:30","3:30–11:30","Off","8am–5pm","8am–5pm"]},
+    {name:"Roads, Rebecca",role:"Salad station",tasks:["3:30–11:30","3:30–11:30","3:30–11:30","Off","Off","3:30–11:30","Off"]},
+    {name:"Espinoza, Alan",role:"Middle station",tasks:["Off","Off","Off","3:30–11:30","3:30–11:30","3:30–11:30","3:30–11:30"]},
+    {name:"Pineda, Dorian",role:"Salad / Middle",tasks:["Off","Off","3:30–11:30","Off","3:30–11:30","3:30–11:30","3:30–11:30"]},
+    {name:"Santos, Cindy",role:"Salad / Middle · Barista",tasks:["Barista","3:30–11:30","Off","Off","3:30–11:30","Off","Off"]},
+    {name:"Gabriel Martinez",role:"Mon salad·Wed lunch·Fri salad·Sat/Sun middle",tasks:["3:30–11:30","Off","9am–4pm","Off","8am–4pm","8am–4pm","8am–4pm"]},
+    {name:"Merino, Dolores",role:"Inventories·helping salad",tasks:["3:30–10pm","Off","10am–5pm","Off","2pm–10pm","9am/4pm","9am/4pm"]},
+    {name:"Gonzales, Cristian",role:"Mon/Tue onions·Wed–Fri salad",tasks:["7am–3pm","7am–3pm","3:30–11:30","3:30–11:30","3:30–11:30","Off","Off"]},
+  ]},
+  {name:"🥣 Prep / AM Team",rows:[
+    {name:"Loaeza, Liliana",role:"Main AM cook",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Bustillo, Carman",role:"Prep / bagging food",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Beltrand, Sutapa",role:"Prep bolani beef",tasks:["7am–2pm","7am–2pm","7am–2pm","Off","Off","Off","Off"]},
+    {name:"Ayite, Anani",role:"Cutting all meats",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Antunez, Cristian",role:"Cooking all sauces / prep red chutney",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Natren, Dalila",role:"Prep bolani potato / leek",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"]},
+    {name:"Machuca, Edith",role:"Prep dumplings",tasks:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Ayala, Orbelina",role:"AM cook / prep",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Campos, Ana",role:"Dumplings / orange cake",tasks:["7am–3pm","Off","Off","7am–3pm","7am–3pm","Cake","Off"]},
+    {name:"Daniela Romero",role:"Dumplings",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Verde, M Bessy",role:"Prep cook",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"]},
+    {name:"Jacobo, Maria",role:"Prep cook",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Azizi, Haroon",role:"Baker / prep sambossas / peeling pumpkins",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Agh Mohamed",role:"Baker / prep sambossas / peeling pumpkins",tasks:["7am–3pm","Off","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+  ]},
+  {name:"🫧 Dishwashers / Cleaning",rows:[
+    {name:"Flores, William",role:"4pm–2am dishwasher",tasks:["4pm–12:30","4pm–12:30","Off","Off","4pm–2am","Off","4am–1am"]},
+    {name:"Bislao, Abalo",role:"Dining rooms·fryer·oven·windows·1819·Olivier",tasks:["Off","7am–3pm","7am–3pm","Off","7am–3pm","8am–6pm","Off"]},
+    {name:"Martin Hernandez",role:"Dining room cleaning",tasks:["Off","Off","Off","Off","6am–1am","8am–9pm","6am–6pm"]},
+    {name:"Hounsounou (Cocou)",role:"Tue/Fri dining rooms·fryer·oven·windows·1819",tasks:["Off","7am–2pm","4am–1am","Off","7am–3pm","6am–2am","Off"]},
+    {name:"Rocha, Oscar",role:"Dining room cleaning",tasks:["8am–4pm","Off","8am–4pm","Off","8am–4pm","8am–3pm","Off"]},
+    {name:"Tovihlon, Komi",role:"Dishwasher",tasks:["4pm–11:30","4pm–11:30","4am–1am","4am–1am","1pm–8pm","Off","Off"]},
+    {name:"Lucien (Fadel)",role:"Dishwasher·shopping with Olivier",tasks:["7am–4pm","7am–4pm","Off","Off","7am–4pm","Off","Off"]},
+    {name:"Miranda, Marlon",role:"Dishwasher",tasks:["8am–4pm","Off","8am–4pm","8am–4pm","8am–4pm","Off","8am–4pm"]},
+    {name:"Fransisco, Juan",role:"Shopping / Dishwasher",tasks:["Off","8am–4pm","Off","4am–1am","Off","4pm–2am","4am–1am"]},
+  ]},
+];
+
+// ── INVENTORY STRUCTURE ───────────────────────────────────────────────────────
+const INV_CATEGORIES={
+  vegetables:{label:"🥦 Vegetables / Fruits",color:"#27AE60"},
+  meat:{label:"🥩 Meat / Poultry / Seafood",color:"#C0392B"},
+  dairy:{label:"🥛 Dairy Products",color:"#2980B9"},
+  dry:{label:"🌾 Dry Goods / Spices",color:"#8E44AD"},
+  frozen:{label:"🧊 Frozen Foods",color:"#16A085"},
+  cleaning:{label:"🧴 Cleaning Products",color:"#E67E22"},
+  supplies:{label:"📦 Supplies / Paper Goods",color:"#7F8C8D"},
+  other:{label:"📋 Other",color:"#888"},
+};
+
+// Default inventory items from the grocery list
+const DEFAULT_INV_ITEMS=[
+  // Vegetables / Fruits
+  {n:"Idaho Potatoes",cat:"vegetables",loc:"kitchen",par:"3 box",supplier:"Restaurant Depot"},
+  {n:"Arugula Baby",cat:"vegetables",loc:"kitchen",par:"1 Bag",supplier:"Restaurant Depot"},
+  {n:"Large Red Beets",cat:"vegetables",loc:"kitchen",par:"6 Each",supplier:"Restaurant Depot"},
+  {n:"Large Golden Beets",cat:"vegetables",loc:"kitchen",par:"6 Each",supplier:"Restaurant Depot"},
+  {n:"Cauliflower",cat:"vegetables",loc:"kitchen",par:"1 Box",supplier:"Restaurant Depot"},
+  {n:"Habaneros Pepper",cat:"vegetables",loc:"kitchen",par:"2 Case",supplier:"Restaurant Depot"},
+  {n:"Fresh Dill",cat:"vegetables",loc:"kitchen",par:"6 Bags",supplier:"Restaurant Depot"},
+  {n:"Fresh Mint",cat:"vegetables",loc:"kitchen",par:"2 pk",supplier:"Restaurant Depot"},
+  {n:"Fresh Basil",cat:"vegetables",loc:"kitchen",par:"3 pk",supplier:"Restaurant Depot"},
+  {n:"European Cucumber",cat:"vegetables",loc:"kitchen",par:"7 Each",supplier:"Restaurant Depot"},
+  {n:"Red Radishes",cat:"vegetables",loc:"kitchen",par:"1 Bag",supplier:"Restaurant Depot"},
+  {n:"Turnips (10 lbs)",cat:"vegetables",loc:"kitchen",par:"1 Bag",supplier:"Restaurant Depot"},
+  {n:"Garlic",cat:"vegetables",loc:"kitchen",par:"4 Gl.",supplier:"Restaurant Depot"},
+  {n:"Ginger",cat:"vegetables",loc:"kitchen",par:"2 Bags",supplier:"Restaurant Depot"},
+  {n:"Red Cabbage",cat:"vegetables",loc:"kitchen",par:"1 Each",supplier:"Restaurant Depot"},
+  {n:"Carrots",cat:"vegetables",loc:"kitchen",par:"1 Bag",supplier:"Restaurant Depot"},
+  {n:"Kale",cat:"vegetables",loc:"kitchen",par:"2 Bags",supplier:"Restaurant Depot"},
+  {n:"Avocado",cat:"vegetables",loc:"kitchen",par:"20 Each",supplier:"Restaurant Depot"},
+  {n:"Grape Tomatoes",cat:"vegetables",loc:"kitchen",par:"1 Cs",supplier:"Restaurant Depot"},
+  {n:"Jalapenos",cat:"vegetables",loc:"kitchen",par:"3 Bags",supplier:"Restaurant Depot"},
+  {n:"Large Tomatoes 6/6",cat:"vegetables",loc:"kitchen",par:"1 Box",supplier:"Restaurant Depot"},
+  {n:"Baby Spinach",cat:"vegetables",loc:"kitchen",par:"2 Bags",supplier:"Restaurant Depot"},
+  {n:"Green Bell Peppers",cat:"vegetables",loc:"kitchen",par:"1 Cs",supplier:"Restaurant Depot"},
+  {n:"Pumpkin",cat:"vegetables",loc:"kitchen",par:"3 Cs",supplier:"Restaurant Depot"},
+  {n:"Mushroom Button",cat:"vegetables",loc:"kitchen",par:"2 Cs",supplier:"Restaurant Depot"},
+  {n:"Brown Mushroom",cat:"vegetables",loc:"kitchen",par:"2 Cs",supplier:"Restaurant Depot"},
+  {n:"Red Onions",cat:"vegetables",loc:"kitchen",par:"3 Bag",supplier:"Restaurant Depot"},
+  {n:"Yellow Onions",cat:"vegetables",loc:"kitchen",par:"6/2 Bags",supplier:"Restaurant Depot"},
+  {n:"Lemon",cat:"vegetables",loc:"kitchen",par:"1 Cs",supplier:"Restaurant Depot"},
+  {n:"Yukon Gold Potatoes",cat:"vegetables",loc:"kitchen",par:"2 Bags",supplier:"Baldor"},
+  {n:"Acai",cat:"vegetables",loc:"kitchen",par:"6 Bag",supplier:"IGF"},
+  // Meat / Poultry / Seafood
+  {n:"Lamb Leg Boneless",cat:"meat",loc:"kitchen",par:"3 case",supplier:"Restaurant Depot"},
+  {n:"Beef Boneless (Terris Major)",cat:"meat",loc:"kitchen",par:"3 Case",supplier:"Restaurant Depot"},
+  {n:"Lamb Chops",cat:"meat",loc:"kitchen",par:"2 Case",supplier:"Restaurant Depot"},
+  {n:"Ground Beef",cat:"meat",loc:"kitchen",par:"1 Case",supplier:"Restaurant Depot"},
+  {n:"Lamb Shank",cat:"meat",loc:"kitchen",par:"1 Case",supplier:"Restaurant Depot"},
+  {n:"Jumbo Shrimp",cat:"meat",loc:"kitchen",par:"3 bags",supplier:"Restaurant Depot"},
+  {n:"Chicken Leg / Thigh",cat:"meat",loc:"kitchen",par:"3 Case",supplier:"American Halal"},
+  {n:"Chicken Breast",cat:"meat",loc:"kitchen",par:"3 Case",supplier:"American Halal"},
+  {n:"Rainbow Trout",cat:"meat",loc:"kitchen",par:"#20",supplier:"Samuel & Sons"},
+  // Dairy
+  {n:"Eggs (30 + 15 Dozen)",cat:"dairy",loc:"kitchen",par:"1.5 Cs",supplier:"Restaurant Depot"},
+  {n:"Butter",cat:"dairy",loc:"kitchen",par:"5 Each",supplier:"Restaurant Depot"},
+  {n:"Heavy Cream",cat:"dairy",loc:"kitchen",par:"8 Each",supplier:"Restaurant Depot"},
+  {n:"Whole Milk",cat:"dairy",loc:"kitchen",par:"6 gl",supplier:"Restaurant Depot"},
+  {n:"Sour Cream",cat:"dairy",loc:"kitchen",par:"8 Each",supplier:"Restaurant Depot"},
+  {n:"Yogurt Plain Whole",cat:"dairy",loc:"kitchen",par:"2 each",supplier:"Restaurant Depot"},
+  {n:"Plain Yogurt 2%",cat:"dairy",loc:"kitchen",par:"2 Cs",supplier:"Restaurant Depot"},
+  {n:"Greek Yogurt",cat:"dairy",loc:"kitchen",par:"2 gl",supplier:"Restaurant Depot"},
+  {n:"Goat Cheese",cat:"dairy",loc:"kitchen",par:"3 Each",supplier:"Restaurant Depot"},
+  // Dry Goods
+  {n:"AP Flour (50 lb)",cat:"dry",loc:"kitchen",par:"2 Bag",supplier:"Restaurant Depot"},
+  {n:"Bread Flour",cat:"dry",loc:"kitchen",par:"2 Bag",supplier:"Restaurant Depot"},
+  {n:"Garbanzo Flour",cat:"dry",loc:"kitchen",par:"4 Bag",supplier:"Restaurant Depot"},
+  {n:"Semolina Flour",cat:"dry",loc:"kitchen",par:"4 qu",supplier:"Afghan Store"},
+  {n:"Long Grain Rice (Al Karim)",cat:"dry",loc:"kitchen",par:"3 Bags",supplier:"Afghan Store"},
+  {n:"Kosher Salt",cat:"dry",loc:"kitchen",par:"12 Each",supplier:"Restaurant Depot"},
+  {n:"Black Pepper Powder",cat:"dry",loc:"kitchen",par:"1 L.ct",supplier:"Restaurant Depot"},
+  {n:"Cumin",cat:"dry",loc:"kitchen",par:"1 L.ct",supplier:"Restaurant Depot"},
+  {n:"Turmeric",cat:"dry",loc:"kitchen",par:"1 L.ct",supplier:"Restaurant Depot"},
+  {n:"Coriander Whole",cat:"dry",loc:"kitchen",par:"2 L.ct",supplier:"Restaurant Depot"},
+  {n:"Sumac",cat:"dry",loc:"kitchen",par:"1/2 L.ct",supplier:"Z&Z Zaatar"},
+  {n:"Saffron",cat:"dry",loc:"kitchen",par:"1 ct",supplier:"Restaurant Depot"},
+  {n:"Olive Oil Regular",cat:"dry",loc:"kitchen",par:"4 cs",supplier:"Restaurant Depot"},
+  {n:"Canola Oil",cat:"dry",loc:"kitchen",par:"6 Cont.",supplier:"Restaurant Depot"},
+  {n:"Harissa Pepper Paste",cat:"dry",loc:"kitchen",par:"5 Cans",supplier:"Baldor"},
+  {n:"Dumplings Orange/Blue",cat:"dry",loc:"kitchen",par:"2 Cs",supplier:"Chinese Market"},
+  {n:"Dumplings Red",cat:"dry",loc:"kitchen",par:"2 Cs",supplier:"Chinese Market"},
+  // Frozen
+  {n:"Frozen Spinach",cat:"frozen",loc:"kitchen",par:"12 Box",supplier:"Restaurant Depot"},
+  {n:"Vanilla Ice Cream",cat:"frozen",loc:"kitchen",par:"1 Box",supplier:"Restaurant Depot"},
+  {n:"Lemon Juice Frozen",cat:"frozen",loc:"kitchen",par:"1 cs",supplier:"Baldor"},
+  // Cleaning Products
+  {n:"Lysol Disinfection Bathroom",cat:"cleaning",loc:"kitchen",par:"1 case",supplier:""},
+  {n:"Bleach",cat:"cleaning",loc:"kitchen",par:"1 case",supplier:""},
+  {n:"Clorox Wipes",cat:"cleaning",loc:"kitchen",par:"1 pack",supplier:""},
+  {n:"409 Kitchen Cleaner",cat:"cleaning",loc:"kitchen",par:"1 case",supplier:""},
+  {n:"Floor Cleaner (Thunder)",cat:"cleaning",loc:"kitchen",par:"1 case",supplier:""},
+  {n:"Palmolive For Pots/Pans",cat:"cleaning",loc:"kitchen",par:"3 each",supplier:""},
+  {n:"Oven Cleaner Liquid",cat:"cleaning",loc:"kitchen",par:"1 case",supplier:""},
+  {n:"Easy Off (Oven Cleaner)",cat:"cleaning",loc:"kitchen",par:"1 case",supplier:""},
+  {n:"Pots Scrubber SOS",cat:"cleaning",loc:"kitchen",par:"2 box",supplier:""},
+  {n:"Paper Towel Rolls",cat:"cleaning",loc:"kitchen",par:"1 box",supplier:""},
+  {n:"Trash Bags Black",cat:"cleaning",loc:"kitchen",par:"1 box",supplier:""},
+  {n:"Mop",cat:"cleaning",loc:"kitchen",par:"3 head",supplier:""},
+  // Supplies
+  {n:"Gloves",cat:"supplies",loc:"kitchen",par:"1 case",supplier:""},
+  {n:"Plastic Wrap Roll Large",cat:"supplies",loc:"kitchen",par:"2 each",supplier:""},
+  {n:"Aluminum Foil Roll Large",cat:"supplies",loc:"kitchen",par:"2 each",supplier:""},
+  {n:"Food Containers Large #8",cat:"supplies",loc:"kitchen",par:"1 box",supplier:""},
+  {n:"Food Containers Small #1",cat:"supplies",loc:"kitchen",par:"1 box",supplier:""},
+  {n:"Parchment Paper Full Sheet",cat:"supplies",loc:"kitchen",par:"1/2 case",supplier:""},
+  {n:"One Quart Plastic Container",cat:"supplies",loc:"kitchen",par:"1/2 case",supplier:""},
+  {n:"Masking Tape",cat:"supplies",loc:"kitchen",par:"5 rolls",supplier:""},
+  // Basement
+  {n:"Natural Water",cat:"other",loc:"basement",par:"10 cs",supplier:"IGF"},
+  {n:"Sparkling Water",cat:"other",loc:"basement",par:"10 cs",supplier:"IGF"},
+  {n:"Coke",cat:"other",loc:"basement",par:"1/2 Box",supplier:"Restaurant Depot"},
+  {n:"Diet Coke",cat:"other",loc:"basement",par:"1/2 Box",supplier:"Restaurant Depot"},
+  {n:"Sprite",cat:"other",loc:"basement",par:"1/2 Box",supplier:"Restaurant Depot"},
+  {n:"Ginger Beer",cat:"other",loc:"basement",par:"1/2 Box",supplier:"Restaurant Depot"},
+  // 1819
+  {n:"Pistachio Ricotta Cake",cat:"other",loc:"1819",par:"10 box",supplier:"IGF"},
+  {n:"Chocolate Cake",cat:"other",loc:"1819",par:"5 box",supplier:"IGF"},
+  {n:"Extra Virgin Olive Oil",cat:"other",loc:"1819",par:"2 Each",supplier:"IGF"},
+];
+
+// ── EMPLOYEES ─────────────────────────────────────────────────────────────────
+const SCHED={1:["3:30–11:30","2pm–11:30","2pm–11:30","3:30–11:30","2pm–11:30","Off","Off"],2:["2pm–11:30","Off","Off","2pm–11:30","Off","1pm–12:30","2pm–11:30"],3:["7am–3pm","Off","Off","7am–3pm","7am–3pm","8am–4pm","8am–4pm"],4:["Off","3:30–11:30","3:30–11:30","3:30–11:30","Off","8am–5pm","8am–5pm"],5:["3:30–11:30","3:30–11:30","3:30–11:30","Off","Off","3:30–11:30","Off"],6:["Off","Off","3:30–11:30","Off","3:30–11:30","3:30–11:30","3:30–11:30"],7:["Barista","3:30–11:30","Off","Off","3:30–11:30","Off","Off"],8:["7am–3pm","7am–3pm","3:30–11:30","3:30–11:30","3:30–11:30","Off","Off"],9:["Off","Off","Off","3:30–11:30","3:30–11:30","3:30–11:30","3:30–11:30"],10:["3:30–11:30","Off","9am–4pm","Off","8am–4pm","8am–4pm","8am–4pm"],11:["3:30–10pm","Off","10am–5pm","Off","2pm–10pm","9am/4pm","9am/4pm"],12:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],13:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],14:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],15:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],16:["7am–2pm","7am–2pm","7am–2pm","Off","Off","Off","Off"],17:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],18:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],19:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],20:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],21:["7am–3pm","Off","7am–3pm","7am–3pm","7am–3pm","Off","Off"],22:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],23:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],24:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],25:["7am–3pm","Off","Off","7am–3pm","7am–3pm","Cake","Off"],26:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],27:["4pm–12:30","4pm–12:30","Off","Off","4pm–2am","Off","4am–1am"],28:["Off","7am–3pm","7am–3pm","Off","7am–3pm","8am–6pm","Off"],29:["Off","Off","Off","Off","6am–1am","8am–9pm","6am–6pm"],30:["Off","7am–2pm","4am–1am","Off","7am–3pm","6am–2am","Off"],31:["8am–4pm","Off","8am–4pm","Off","8am–4pm","8am–3pm","Off"],32:["4pm–11:30","4pm–11:30","4am–1am","4am–1am","1pm–8pm","Off","Off"],33:["7am–4pm","7am–4pm","Off","Off","7am–4pm","Off","Off"],34:["8am–4pm","Off","8am–4pm","8am–4pm","8am–4pm","Off","8am–4pm"],35:["Off","8am–4pm","Off","4am–1am","Off","4pm–2am","4am–1am"]};
+
+let emps=load('emps2',[
+  {id:1,name:"Santos, Jose",st:"Grill",sh:"PM",role:"Grill (Tue/Wed/Fri)·Mon/Thu lines",rate:19.0,note:"Night Line / 1819"},
+  {id:2,name:"Bonilla, Ignacio",st:"Grill",sh:"PM",role:"Grill station",rate:18.0,note:""},
+  {id:3,name:"Ventura, Rodolfo",st:"Grill",sh:"AM",role:"Lunch all stations·Sat/Sun brunch grill",rate:17.0,note:""},
+  {id:4,name:"Gricelda Martinez (Liza)",st:"Salad",sh:"PM",role:"Salad station",rate:19.0,note:""},
+  {id:5,name:"Roads, Rebecca",st:"Salad",sh:"PM",role:"Salad station",rate:19.0,note:""},
+  {id:6,name:"Pineda, Dorian",st:"Salad",sh:"PM",role:"Salad / Middle station",rate:18.0,note:""},
+  {id:7,name:"Santos, Cindy",st:"Salad",sh:"PM",role:"Salad / Middle·Barista",rate:18.0,note:""},
+  {id:8,name:"Gonzales, Cristian",st:"Salad",sh:"AM",role:"Mon/Tue onions·Wed–Fri salad",rate:17.0,note:""},
+  {id:9,name:"Espinoza, Alan",st:"Middle Line",sh:"PM",role:"Middle station",rate:20.0,note:""},
+  {id:10,name:"Gabriel Martinez",st:"Middle Line",sh:"PM",role:"Mon salad·Wed lunch·Fri salad·Sat/Sun middle",rate:17.0,note:""},
+  {id:11,name:"Merino, Dolores",st:"Middle Line",sh:"PM",role:"Inventories·helping salad Fri–Sun",rate:19.0,note:"AM Shifts lead"},
+  {id:12,name:"Loaeza, Liliana",st:"Prep / AM",sh:"AM",role:"Main AM cook",rate:18.0,note:""},
+  {id:13,name:"Antunez, Cristian",st:"Prep / AM",sh:"AM",role:"Cooking all sauces / prep red chutney",rate:18.0,note:""},
+  {id:14,name:"Ayala, Orbelina",st:"Prep / AM",sh:"AM",role:"AM cook / prep",rate:17.0,note:""},
+  {id:15,name:"Natren, Dalila",st:"Prep / AM",sh:"AM",role:"Prep bolani potato / leek",rate:17.0,note:""},
+  {id:16,name:"Beltrand, Sutapa",st:"Prep / AM",sh:"AM",role:"Prep bolani beef",rate:17.0,note:"Mon–Wed only"},
+  {id:17,name:"Verde, M Bessy",st:"Prep / AM",sh:"AM",role:"Prep cook",rate:17.0,note:""},
+  {id:18,name:"Chavarria, Camila",st:"Prep / AM",sh:"AM",role:"Prep bolani pumpkin / sambossa spinach",rate:17.0,note:""},
+  {id:19,name:"Jacobo, Maria",st:"Prep / AM",sh:"AM",role:"Prep cook",rate:17.5,note:""},
+  {id:20,name:"Azizi, Haroon",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",rate:17.0,note:""},
+  {id:21,name:"Agh Mohamed",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",rate:17.0,note:""},
+  {id:22,name:"Bustillo, Carman",st:"Prep / AM",sh:"AM",role:"Prep / bagging food",rate:17.0,note:""},
+  {id:23,name:"Ayite, Anani",st:"Prep / AM",sh:"AM",role:"Cutting all meats",rate:17.0,note:"Fri 10am Meat Team"},
+  {id:24,name:"Machuca, Edith (Roxanna)",st:"Dumplings",sh:"AM",role:"Prep dumplings",rate:18.0,note:"Tue–Fri"},
+  {id:25,name:"Campos, Ana",st:"Dumplings",sh:"AM",role:"Dumplings / orange cake",rate:18.0,note:""},
+  {id:26,name:"Daniela Romero",st:"Dumplings",sh:"AM",role:"Dumplings",rate:17.0,note:""},
+  {id:27,name:"Flores, William",st:"Dishwasher",sh:"PM",role:"4pm–2am dishwasher",rate:17.0,note:""},
+  {id:28,name:"Bislao, Abalo",st:"Deep Cleaning",sh:"AM",role:"Dining rooms·fryer·oven·windows·1819·shopping with Olivier",rate:17.0,note:""},
+  {id:29,name:"Martin Hernandez",st:"Deep Cleaning",sh:"AM",role:"Dining room cleaning",rate:17.0,note:"Sat/Sun"},
+  {id:30,name:"Hounsounou, Justin (Cocou)",st:"Dishwasher",sh:"PM",role:"Tue/Fri dining rooms·fryer·oven·windows·1819",rate:17.0,note:""},
+  {id:31,name:"Rocha, Oscar",st:"Deep Cleaning",sh:"PM",role:"Dining room cleaning",rate:17.0,note:""},
+  {id:32,name:"Tovihlon, Komi",st:"Dishwasher",sh:"PM",role:"Dishwasher",rate:17.0,note:""},
+  {id:33,name:"Lucien Housessou (Fadel)",st:"Dishwasher",sh:"AM",role:"Dishwasher·shopping with Olivier",rate:17.5,note:""},
+  {id:34,name:"Miranda, Marlon",st:"Dishwasher",sh:"PM",role:"Dishwasher",rate:17.5,note:""},
+  {id:35,name:"Fransisco, Juan",st:"Dishwasher",sh:"AM",role:"Shopping / Dishwasher",rate:18.0,note:""},
+]);
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let curSt=load('curSt2',"Dumplings"),curDay=load('curDay2',0),curEmpId=null,curProfDay=0,curMetric="overall";
+let curActDay=load('curActDay2',0),curDelDay=load('curDelDay2',0);
+let curInvLoc=load('curInvLoc','kitchen'),curInvCat=load('curInvCat','vegetables'),curInvDay=load('curInvDay',0);
+
+function makeDay(e,di){const sc=SCHED[e.id]?.[di]||"Off";const w=sc!=="Off"&&sc!=="Barista"&&sc!=="Cake";return{sched:sc,prodItems:(PROD_ITEMS[e.st]||[]).map(()=>null),protocol:(PROTO[e.st]||[]).map(()=>false),waste:(WASTE_ITEMS[e.st]||[]).map(()=>""),remarks:"",working:w};}
+let SD=load('SD2',null);
+if(!SD){SD={};emps.forEach(e=>{SD[e.id]=WEEK.map((_,di)=>makeDay(e,di));});}
+emps.forEach(e=>{if(!SD[e.id])SD[e.id]=WEEK.map((_,di)=>makeDay(e,di));WEEK.forEach((_,di)=>{if(!SD[e.id][di])SD[e.id][di]=makeDay(e,di);if(!SD[e.id][di].waste)SD[e.id][di].waste=(WASTE_ITEMS[e.st]||[]).map(()=>"");if(!SD[e.id][di].prodItems)SD[e.id][di].prodItems=(PROD_ITEMS[e.st]||[]).map(()=>null);});});
+
+let ACT_FRIDGE=load('ACT_FRIDGE3',WEEK.map(()=>Object.fromEntries(FRIDGE_ITEMS.map(f=>[f.id,false]))));
+let ACT_CUSTOM=load('ACT_CUSTOM2',WEEK.map(()=>[]));
+let ACT_NOTES=load('ACT_NOTES2',WEEK.map(()=>""));
+let ACTION_TEMPLATES=load('ACTION_TEMPLATES2',[]);
+let DEL=load('DEL2',WEEK.map(()=>({deliveries:[]})));
+
+// Inventory data: {loc: {cat: {dayIdx: [{itemIdx, qty, status}]}}}
+// We store per item per day: qty on hand, status (ok/low/out)
+let INV_ITEMS=load('INV_ITEMS',DEFAULT_INV_ITEMS.map(item=>({...item,id:Math.random().toString(36).slice(2)})));
+// Per-day quantities: invDayData[day][itemId] = {qty, status, notes}
+let INV_DAY=load('INV_DAY',WEEK.map(()=>({})));
+
+function saveAll(){
+  save('emps2',emps);save('SD2',SD);save('curSt2',curSt);save('curDay2',curDay);
+  save('curActDay2',curActDay);save('curDelDay2',curDelDay);
+  save('ACT_FRIDGE2',ACT_FRIDGE);save('ACT_CUSTOM2',ACT_CUSTOM);save('ACT_NOTES2',ACT_NOTES);
+  save('ACTION_TEMPLATES2',ACTION_TEMPLATES);save('DEL2',DEL);
+  save('INV_ITEMS',INV_ITEMS);save('INV_DAY',INV_DAY);
+  save('curInvLoc',curInvLoc);save('curInvCat',curInvCat);save('curInvDay',curInvDay);
+
+  scheduleSyncToSupabase();
+}
+
+// ── SCORES ────────────────────────────────────────────────────────────────────
+function empProt(id){
+  const e=emps.find(x=>x.id===id);if(!e)return 0;
+  const p=PROTO[e.st]||[];if(!p.length)return 0;
+  const w=SD[id]?.filter(d=>d.working)||[];if(!w.length)return 0;
+  let totalDone=0,totalApplicable=0;
+  w.forEach(d=>{
+    p.forEach((_,i)=>{
+      const v=(d.protocol||[])[i];
+      if(v==='na')return; // skip N/A items
+      totalApplicable++;
+      if(v===true)totalDone++;
+    });
+  });
+  return totalApplicable>0?Math.round((totalDone/totalApplicable)*100):0;
+}
+function empProd(id){const e=emps.find(x=>x.id===id);if(!e)return 0;const items=PROD_ITEMS[e.st]||[];if(!items.length)return 0;const w=SD[id]?.filter(d=>d.working&&d.prodItems&&d.prodItems.some(v=>v!==null&&v!=="na"))||[];if(!w.length)return 0;const scores=w.map(d=>{const ent=items.map((item,i)=>d.prodItems[i]!==null&&d.prodItems[i]!=="na"?Math.min((Number(d.prodItems[i])/item.target)*100,150):null).filter(v=>v!==null);return ent.length?ent.reduce((a,s)=>a+s,0)/ent.length:0;});return Math.min(Math.round(scores.reduce((a,s)=>a+s,0)/scores.length),150);}
+function empOverall(id){
+  const e=emps.find(x=>x.id===id);if(!e)return 0;
+  const prot=empProt(id);
+  const prod=Math.min(empProd(id),100);
+  // Prep/AM: Protocol 30% + Production 70%
+  // Line stations: Protocol 55% + Production 45%
+  if(e.st==='Prep / AM'){
+    return Math.round((prot*0.30)+(prod*0.70));
+  }
+  return Math.round((prot*0.55)+(prod*0.45));
+}
+function sc(s){return s>=80?"#27AE60":s>=55?"#E67E22":"#E74C3C";}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function showView(v){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  const m={staff:'Staff',schedule:'Schedule',stations:'Stations',delivery:'Delivery',inventory:'Inventory',actions:'Actions',chart:'Chart',add:'+ Add',profile:'Stations'};
+  document.querySelectorAll('.nbtn').forEach(b=>{if(b.textContent.trim()===m[v])b.classList.add('active');});
+  if(v==='staff')renderStaff();
+  if(v==='schedule')renderSchedule();
+  if(v==='stations')renderStations();
+  if(v==='delivery')renderDelivery();
+  if(v==='inventory')renderInventory();
+  if(v==='actions')renderActions();
+  if(v==='chart')renderChart();
+  if(v==='add')renderAdd();
+}
+
+// ── STAFF ─────────────────────────────────────────────────────────────────────
+function renderStaff(){
+  const sel=document.getElementById('fst');
+  if(sel&&sel.options.length<=1){Object.keys(ST).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});}
+  const s=(document.getElementById('search')?.value||'').toLowerCase();
+  const fs=document.getElementById('fshift')?.value||'All';
+  const fst=document.getElementById('fst')?.value||'All';
+  const f=emps.filter(e=>(fs==='All'||e.sh===fs)&&(fst==='All'||e.st===fst)&&(e.name.toLowerCase().includes(s)||e.st.toLowerCase().includes(s)||e.role.toLowerCase().includes(s)));
+  document.getElementById('staff-grid').innerHTML=f.map(e=>{
+    const ov=empOverall(e.id),pr=empProd(e.id),pt=empProt(e.id);
+    const stc=ST[e.st]||{color:'#222',target:0,unit:''};
+    const wd=SD[e.id]?.filter(d=>d.working&&d.produced!==null)||[];
+    const avg=wd.length?Math.round(wd.reduce((a,d)=>a+Number(d.produced),0)/wd.length):null;
+    return `<div class="ecard" onclick="openProfFromStaff(${e.id})" style="border-left:4px solid ${stc.color}">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
+        <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap"><span class="tag" style="background:${stc.color}18;color:${stc.color}">${e.st}</span><span class="tag" style="background:${e.sh==='AM'?'#FDF9F3':'#F3F6FD'};color:${e.sh==='AM'?'#8B6914':'#1A4A8B'}">${e.sh}</span></div></div>
+        <div style="text-align:right;flex-shrink:0;margin-left:7px"><div style="font-size:21px;font-weight:bold;color:${sc(ov)}">${ov}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:7px;color:#444">OVERALL</div></div>
+      </div>
+      <div style="font-size:16px;color:#333;margin-bottom:5px">${e.role}</div>
+      ${avg!==null?`<div style="font-size:16px;color:#333;margin-bottom:5px">Avg: <strong style="color:${sc(Math.min(pr,100))}">${avg}/${stc.target} ${stc.unit}</strong></div>`:''}
+      ${([['Protocol '+(e.st==='Prep / AM'?'30':'55')+'%',pt],['Production '+(e.st==='Prep / AM'?'70':'45')+'%',Math.min(pr,100)]]).map(([l,v])=>`<div style="margin-bottom:3px"><div style="display:flex;justify-content:space-between;font-size:15px;color:#333;margin-bottom:2px"><span>${l}</span><span style="color:${sc(v)}">${v}%</span></div><div class="pbar"><div class="pfill" style="width:${v}%;background:${sc(v)}"></div></div></div>`).join('')}
+    </div>`;
+  }).join('');
+}
+function openProfFromStaff(id){const e=emps.find(x=>x.id===id);curEmpId=id;curSt=e.st;curProfDay=curDay;document.getElementById('prof-back').onclick=()=>showView('staff');showView('profile');renderProf();}
+
+// ── SCHEDULE ──────────────────────────────────────────────────────────────────
+function cellCls(t){if(!t||t==='Off')return 'sch-off';const tl=t.toLowerCase();if(tl.includes('7am')||tl.includes('8am')||tl.includes('6am')||t==='Barista'||t==='Cake')return 'sch-am';if(tl.includes('12:30am')||tl.includes('2am')||tl.includes('1am')||tl.includes('2pm')||tl.includes('3:30')||tl.includes('4pm'))return 'sch-pm';return 'sch-am';}
+function renderSchedule(){
+  const g=document.getElementById('schedule-grid');
+  let html=`<div class="sch-h">Employee</div>${WEEK.map(w=>`<div class="sch-h">${w.short}<br><span style="font-size:17px;opacity:.8">${w.full.replace(w.short+' ','')}</span></div>`).join('')}`;
+  SCHEDULE_GROUPS.forEach(group=>{
+    html+=`<div class="sch-grp">${group.name}</div>`;
+    group.rows.forEach(row=>{
+      html+=`<div class="sch-name">${row.name}<br><span style="font-size:17px;color:#333;font-weight:normal">${row.role}</span></div>`;
+      row.tasks.forEach(t=>{const cls=cellCls(t);html+=`<div class="sch-cell ${cls}">${t||'—'}</div>`;});
+    });
+  });
+  g.innerHTML=html;
+}
+
+// ── STATIONS ──────────────────────────────────────────────────────────────────
+function renderStations(){
+  document.getElementById('st-btns').innerHTML=Object.entries(ST).map(([n,s])=>{const a=n===curSt;return `<button class="stbtn${a?' active':''}" onclick="selSt('${n}')" style="background:${a?s.color:'#fff'};border-color:${a?s.color:s.color+'66'};color:${a?'#fff':s.color}">${n}<br><span style="font-size:15px;font-weight:normal;opacity:.85">Target: ${s.target} ${s.unit}</span></button>`;}).join('');
+  const sc2=ST[curSt]?.color||'#888';
+  document.getElementById('day-btns').innerHTML=WEEK.map((w,i)=>{const a=i===curDay;const wk=emps.filter(e=>e.st===curSt&&SCHED[e.id]?.[i]&&SCHED[e.id][i]!=="Off");const ent=wk.filter(e=>SD[e.id]?.[i]?.produced!==null).length;return `<button class="daybtn${a?' active':''}" onclick="selDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div><div style="font-size:16px;margin-top:2px;color:${a?'rgba(255,255,255,.9)':wk.length?'#27AE60':'#AAA'};font-weight:bold">${wk.length?wk.length+' staff':'Off'}</div>${wk.length&&ent?`<div style="font-size:15px;color:${a?'rgba(255,255,255,.7)':'#8B6220'}">${ent}/${wk.length} logged</div>`:''}</button>`;}).join('');
+  const wt=emps.filter(e=>e.st===curSt&&SCHED[e.id]?.[curDay]&&SCHED[e.id][curDay]!=="Off");
+  document.getElementById('st-header').innerHTML=wt.length?`<div class="card" style="border-left:4px solid ${sc2};display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;padding:9px 12px"><div><div style="font-size:16px;font-weight:bold;color:${sc2}">${curSt} — ${WEEK[curDay].full}</div><div style="font-size:17px;color:#333;margin-top:1px">${wt.length} staff on shift · Target: ${ST[curSt].target} ${ST[curSt].unit}/person/day</div></div><div style="font-size:17px;color:#444">Tap an employee to log production, protocol & waste</div></div>`:
+  `<div style="padding:9px 12px;background:#F9F8F5;border:1px solid #E8E4DC;border-radius:8px;font-size:15px;color:#333">No <strong>${curSt}</strong> staff on ${WEEK[curDay].full}.</div>`;
+  document.getElementById('emp-grid').innerHTML=wt.map(e=>{
+    const day=SD[e.id]?.[curDay]||{};const tg=ST[e.st]?.target||1;const pItems=PROD_ITEMS[e.st]||[];const dp=day.prodItems||[];const entProd=pItems.filter((_,i)=>dp[i]!==null&&dp[i]!==undefined);
+    const avgSc=entProd.length?Math.round(entProd.reduce((a,item)=>{const i=pItems.indexOf(item);return a+Math.min((Number(dp[i])/item.target)*100,150);},0)/entProd.length):null;
+    const proto=PROTO[e.st]||[];const protoVals=(day.protocol||[]);const pdNA=protoVals.filter(v=>v==='na').length;const pdApplicable=proto.length-pdNA;const pd=protoVals.filter(v=>v===true).length;const pp=pdApplicable>0?Math.round((pd/pdApplicable)*100):0;
+    const waste=WASTE_ITEMS[e.st]||[];const wasted=waste.filter((_,i)=>day.waste?.[i]&&Number(day.waste[i])>0).length;
+    const ov=empOverall(e.id);
+    return `<div class="ecard" onclick="openProf(${e.id})" style="border-left:4px solid ${sc2}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px">
+        <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
+        <div style="font-size:16px;color:#333;margin:2px 0">${e.role}</div>
+        <span style="font-size:16px;padding:2px 6px;border-radius:3px;background:${e.sh==='AM'?'#FDF9F3':'#F3F6FD'};color:${e.sh==='AM'?'#8B6914':'#1A4A8B'}">${day.sched}</span></div>
+        <div style="text-align:right;flex-shrink:0;margin-left:7px"><div style="font-size:21px;font-weight:bold;color:${sc(ov)}">${ov}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:7px;color:#444">WEEKLY</div></div>
+      </div>
+      <div style="margin-bottom:6px;padding:6px 8px;background:${avgSc!==null?'#F9F8F5':'#FFF8F0'};border-radius:5px;border:1px solid ${avgSc!==null?'#EEE':'#F0D5B0'}">
+        <div style="display:flex;justify-content:space-between;font-size:16px;color:#333;margin-bottom:3px"><span>Production (${entProd.length}/${pItems.length})</span>${avgSc!==null?`<span style="color:${sc(Math.min(avgSc,100))};font-weight:bold">${Math.min(avgSc,100)}%</span>`:`<span style="color:#E67E22;font-weight:bold">Not logged</span>`}</div>
+        ${avgSc!==null?`<div class="pbar"><div class="pfill" style="width:${Math.min(avgSc,100)}%;background:${avgSc>=100?'#27AE60':avgSc>=70?'#E67E22':'#E74C3C'}"></div></div>`:`<div style="font-size:16px;color:#8B6220">Tap to enter</div>`}
+        ${pItems.slice(0,4).map((item,i)=>{const v=dp[i];const hv=v!==null&&v!==undefined;const p=hv?Math.min(Math.round((Number(v)/item.target)*100),150):null;const isNA3=v==='na';return '<div style="font-size:15px;color:#222;margin-top:2px;display:flex;justify-content:space-between"><span>'+item.label+'</span><span style="color:'+(isNA3?'#AAA':hv?sc(Math.min(p,100)):'#CCC')+';font-weight:bold;font-style:'+(isNA3?'italic':'normal')+'">'+(isNA3?'N/A':hv?v+'/'+item.target+' ('+p+'%)':'—')+'</span></div>';}).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:16px;color:#333;margin-bottom:2px"><span>Protocol (${pd}/${pdApplicable}${pdNA>0?" — "+pdNA+" N/A":""})</span><span style="color:${sc(pp)};font-weight:bold">${pp}%</span></div>
+      <div class="pbar" style="margin-bottom:4px"><div class="pfill" style="width:${pp}%;background:${sc(pp)}"></div></div>
+      ${waste.length?`<div style="font-size:16px;color:#333">🗑️ Waste: <span style="color:${wasted>0?'#E74C3C':'#27AE60'};font-weight:bold">${wasted}/${waste.length} logged</span></div>`:''}
+      ${day.remarks?`<div style="font-size:16px;color:#E74C3C;margin-top:5px;border-top:1px solid #FEE;padding-top:4px">⚠️ ${day.remarks}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function selSt(n){curSt=n;save('curSt2',n);renderStations();}
+function selDay(i){curDay=i;save('curDay2',i);renderStations();}
+
+// ── PROFILE ───────────────────────────────────────────────────────────────────
+function openProf(id){curEmpId=id;curProfDay=curDay;document.getElementById('prof-back').onclick=()=>showView('stations');showView('profile');renderProf();}
+function renderProf(){
+  const e=emps.find(x=>x.id===curEmpId);if(!e)return;
+  const days=SD[e.id]||[];const day=days[curProfDay]||{};
+  const stc=ST[e.st]||{target:0,unit:'',color:'#222'};const tg=stc.target;
+  const prodItems=PROD_ITEMS[e.st]||[];
+  const proto=PROTO[e.st]||[];const stPV=(day.protocol||[]);const pdNA=stPV.filter(v=>v==='na').length;const pdApplicable=proto.length-pdNA;const pd=stPV.filter(v=>v===true).length;const pp=pdApplicable>0?Math.round((pd/pdApplicable)*100):0;
+  const wasteItems=WASTE_ITEMS[e.st]||[];
+  const ov=empOverall(e.id),wp=empProt(e.id),wpr=empProd(e.id);
+  const wdays=days.filter(d=>d.working&&d.prodItems&&d.prodItems.some(v=>v!==null&&v!=='na'));
+  const todayScores=prodItems.map((item,i)=>{const v=day.prodItems?.[i];if(v===null||v===undefined)return null;if(v==='na')return 'na';return Math.min(Math.round((Number(v)/item.target)*100),150);});
+  const todayNA=todayScores.filter(s=>s==='na').length;
+  const todayEntered=todayScores.filter(s=>s!==null&&s!=='na');
+  const todayAvgScore=todayEntered.length?Math.round(todayEntered.reduce((a,s)=>a+s,0)/todayEntered.length):null;
+  const tabs=WEEK.map((w,i)=>{const d=days[i]||{};return `<button class="daybtn${i===curProfDay?' active':''}" onclick="setPDay(${i})" style="${!d.working?'opacity:.4':''}"><div style="font-weight:bold;font-size:17px">${w.short}</div><div style="font-size:15px">${w.full.replace(w.short+' ','')}</div>${d.working?`<div style="font-size:17px;color:${i===curProfDay?'rgba(255,255,255,.8)':d.produced!==null?'#27AE60':'#E67E22'}">${d.produced!==null?'✓':'—'}</div>`:`<div style="font-size:17px;color:${i===curProfDay?'rgba(255,255,255,.5)':'#CCC'}">off</div>`}</button>`;}).join('');
+  const protoHtml=proto.map((text,i)=>{
+    const val=(day.protocol||[])[i];
+    const done=val===true;
+    const isNA=val==='na';
+    return `<div class="crow${done?' done':''}" style="${isNA?'opacity:.5;background:#F5F5F5;border-color:#999':''}">
+      <div class="cbox${done?' done':''}" onclick="togProto(${i})" style="cursor:${isNA?'default':'pointer'}">
+        <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="ctext" style="${isNA?'text-decoration:line-through;color:#333':''}" onclick="${isNA?'':'togProto('+i+')'}">${text}${isNA?' <em style=\"font-size:15px;color:#333\">(N/A)</em>':''}</span>
+      <button onclick="togProtoNA(${i})" style="background:${isNA?'#888':'#F0EDE6'};color:${isNA?'#fff':'#AAA'};border:1px solid ${isNA?'#888':'#DDD'};border-radius:4px;padding:2px 7px;font-size:15px;cursor:pointer;flex-shrink:0;margin-left:5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif">${isNA?'Undo':'N/A'}</button>
+    </div>`;
+  }).join('');
+  const wasteHtml=wasteItems.map((label,i)=>{const val=(day.waste||[])[i]||"";return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 9px;border:1px solid #EEE;border-radius:5px;margin-bottom:4px;background:${Number(val)>0?'#FFF5F0':'#FAFAF8'}"><span style="font-size:15px;color:${Number(val)>0?'#E74C3C':'#444'};flex:1">${label}</span><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><input type="number" min="0" class="waste-inp" value="${val}" placeholder="0" oninput="setWaste(${i},this.value)" style="border-color:${Number(val)>0?'#E74C3C':'#DDD'}"/>${Number(val)>0?`<span style="font-size:16px;color:#E74C3C;font-weight:bold">!</span>`:''}</div></div>`;}).join('');
+  const incLog=days.filter(d=>d.remarks).map(d=>{const di=days.indexOf(d);return `<div style="display:flex;gap:8px;margin-bottom:4px;font-size:17px;padding:5px 8px;background:#FFF5F5;border-radius:4px;border-left:3px solid #E74C3C"><span style="color:#E74C3C;font-weight:bold;flex-shrink:0;min-width:55px">${WEEK[di]?.short} ${WEEK[di]?.full.replace(WEEK[di]?.short+' ','')}</span><span style="color:#333">${d.remarks}</span></div>`;}).join('');
+  const wGrid=WEEK.map((w,i)=>{const d=days[i]||{};if(!d.working)return'';const p=d.produced;const ent=p!==null;const dp=ent?Math.min(Math.round((Number(p)/tg)*100),150):null;return `<div style="flex:1;min-width:62px;text-align:center;padding:6px 4px;background:${ent?'#FAFAF8':'#F9F8F5'};border:1px solid ${ent?'#E8E4DC':'#EEE'};border-radius:6px"><div style="font-size:16px;font-weight:bold;color:#222">${w.short}</div><div style="font-size:17px;color:#333">${w.full.replace(w.short+' ','')}</div>${ent?`<div style="font-size:17px;font-weight:bold;color:${sc(Math.min(dp,100))};margin:2px 0">${p}</div><div style="font-size:17px;color:${sc(Math.min(dp,100))}">${dp}%</div><div class="pbar" style="margin-top:2px"><div class="pfill" style="width:${Math.min(dp,100)}%;background:${sc(Math.min(dp,100))}"></div></div>`:`<div style="font-size:16px;color:#444;margin-top:3px">—</div>`}</div>`;}).join('');
+
+  document.getElementById('profile-content').innerHTML=`
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:13px;padding-bottom:12px;border-bottom:2px solid #F0EDE6">
+      <div><div style="font-size:16px;color:${stc.color};letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px">${e.st}</div>
+      <h2 style="font-size:21px;font-weight:bold;margin-bottom:4px">${e.name}</h2>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px"><span class="tag" style="background:${stc.color}18;color:${stc.color}">${e.st}</span><span class="tag" style="background:${e.sh==='AM'?'#FDF9F3':'#F3F6FD'};color:${e.sh==='AM'?'#8B6914':'#1A4A8B'}">${e.sh} · $${e.rate}/hr</span></div>
+      <div style="font-size:17px;color:#444">${e.role}</div>${e.note?`<div style="font-size:16px;color:#8B6220;margin-top:2px">${e.note}</div>`:''}</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">${[['OVERALL',ov],[e.st==='Prep / AM'?'PROTO 30%':'PROTO 55%',wp],[e.st==='Prep / AM'?'PROD 70%':'PROD 45%',Math.min(wpr,100)]].map(([l,v])=>`<div style="text-align:center;padding:6px 9px;background:#FAFAF8;border-radius:7px;border:1px solid #E8E4DC;min-width:60px"><div style="font-size:19px;font-weight:bold;color:${sc(v)};line-height:1">${v}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:17px;color:#333;letter-spacing:.06em;margin-top:2px">${l}</div></div>`).join('')}</div>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap">${tabs}</div>
+    <div style="margin-bottom:10px;display:flex;align-items:center;gap:7px"><span style="font-size:15px;color:#444;font-weight:bold">${WEEK[curProfDay].full}</span><span style="background:${day.working?'#FDF9F3':'#EEE'};color:${day.working?'#8B6914':'#AAA'};font-size:17px;padding:3px 8px;border-radius:4px;border:1px solid ${day.working?'#E8D5A3':'#DDD'};font-weight:bold">${day.sched||'Off'}</span></div>
+    ${day.working?`
+    <div class="card" style="margin-bottom:9px">
+      <button class="sec-toggle open" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">Production &#8212; ${WEEK[curProfDay].full}</div><span class="arr">&#9654;</span></button><div class="sec-body open">
+      ${todayAvgScore!==null?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 11px;background:#FAFAF8;border:1px solid #E8E4DC;border-radius:6px">
+        <div style="font-size:16px;color:#333;flex:1">Score aujourd'hui (${todayEntered.length}/${prodItems.length} items)</div>
+        <div style="font-size:23px;font-weight:bold;color:${sc(Math.min(todayAvgScore,100))}">${Math.min(todayAvgScore,100)}<span style="font-size:15px;color:#444">%</span></div>
+        ${todayAvgScore>100?`<div style="font-size:16px;color:#27AE60;font-weight:bold">+${todayAvgScore-100}% above</div>`:''}
+      </div>`:''}
+      <div style="display:flex;flex-direction:column;gap:7px">
+      ${prodItems.map((item,i)=>{
+        const val=day.prodItems?.[i];
+        const hasV=val!==null&&val!==undefined;
+        const pct2=hasV?Math.min(Math.round((Number(val)/item.target)*100),150):null;
+        const iwd=wdays.filter(d=>d.prodItems?.[i]!==null&&d.prodItems?.[i]!==undefined);
+        const iavg=iwd.length?Math.round(iwd.reduce((a,d)=>a+Number(d.prodItems[i]),0)/iwd.length):null;
+        const isNA=val==='na';
+        return `<div style="padding:9px 11px;border:1px solid ${isNA?'#E0E0E0':hasV?'#E8E4DC':'#F0D5B0'};border-radius:7px;background:${isNA?'#F5F5F5':hasV?'#FAFAF8':'#FFF8F0'};opacity:${isNA?'0.65':'1'}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+            <div style="flex:1;min-width:110px">
+              <div style="font-size:15px;font-weight:bold;color:${isNA?'#AAA':'#333'};${isNA?'text-decoration:line-through':''}">${item.label}</div>
+              <div style="font-size:16px;color:#333;margin-top:1px">${isNA?'<span style="color:#444;font-style:italic">Non applicable ce jour</span>':`Target: <strong style="color:${stc.color}">${item.target} ${item.unit}/day</strong>${iavg!==null?' &middot; Avg: <strong>'+iavg+' '+item.unit+'</strong>':''}`}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
+              ${isNA?'':`<div style="text-align:center">
+                <div style="font-size:15px;color:#333;margin-bottom:2px">Realized</div>
+                <input type="number" min="0" class="prod-inp" style="width:70px;font-size:15px;border-color:${hasV?stc.color:'#DDD'}"
+                  value="${hasV?val:''}" placeholder="${item.target}" oninput="setProdItem(${i},this.value)"/>
+                <div style="font-size:15px;color:#333;margin-top:1px">${item.unit}</div>
+              </div>
+              <div style="text-align:center;min-width:44px">
+                ${hasV?`<div style="font-size:21px;font-weight:bold;color:${sc(Math.min(pct2,100))};line-height:1">${pct2>149?'150+':pct2}<span style="font-size:17px;color:#444">%</span></div>
+                <div style="font-size:17px;color:${sc(Math.min(pct2,100))}">${pct2>=100?'Above':pct2>=70?'Near':'Below'}</div>`
+                :'<div style="font-size:15px;color:#8B6220;margin-top:4px">Enter</div>'}
+              </div>`}
+              <button onclick="toggleNA(${i})" style="background:${isNA?'#888':'#F0EDE6'};color:${isNA?'#fff':'#888'};border:1px solid ${isNA?'#888':'#DDD'};border-radius:5px;padding:4px 8px;font-size:16px;cursor:pointer;white-space:nowrap;flex-shrink:0">${isNA?'Undo N/A':'N/A'}</button>
+            </div>
+          </div>
+          ${hasV&&!isNA?`<div style="margin-top:5px">
+            <div style="display:flex;justify-content:space-between;font-size:15px;color:#333;margin-bottom:2px">
+              <span>${val} / ${item.target} ${item.unit}</span>
+              <span style="color:${sc(Math.min(pct2,100))};font-weight:bold">${pct2}%</span>
+            </div>
+            <div style="height:6px;background:#EEE;border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(pct2,100)}%;background:${pct2>=100?'#27AE60':pct2>=70?'#E67E22':'#E74C3C'};border-radius:3px;transition:width .4s"></div>
+            </div>
+          </div>`:''}
+        </div>`;
+      }).join('')}
+      </div>
+</div>
+    </div>
+    ${wdays.length?`<div class="card" style="margin-bottom:9px">
+      <button class="sec-toggle" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">Weekly Summary</div><span class="arr">&#9654;</span></button><div class="sec-body">
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:16px">
+          <tr>
+            <th style="text-align:left;padding:4px 6px;color:#333;font-weight:normal;border-bottom:1px solid #EEE">Item</th>
+            <th style="color:#333;font-weight:normal;border-bottom:1px solid #EEE;padding:4px 5px;text-align:center">Target</th>
+            ${WEEK.map((w,wi)=>SD[e.id]?.[wi]?.working?`<th style="color:#333;font-weight:normal;border-bottom:1px solid #EEE;padding:4px 3px;text-align:center">${w.short}<br><span style="font-size:17px">${w.full.replace(w.short+' ','')}</span></th>`:'').join('')}
+          </tr>
+          ${prodItems.map((item,pi)=>`<tr style="border-bottom:1px solid #F5F5F5">
+            <td style="padding:5px 6px;font-weight:bold;color:#333;white-space:nowrap">${item.label}</td>
+            <td style="padding:5px 5px;text-align:center;color:${stc.color};font-weight:bold">${item.target}<br><span style="font-size:17px;font-weight:normal;color:#333">${item.unit}</span></td>
+            ${WEEK.map((w,wi)=>{const d=SD[e.id]?.[wi];if(!d?.working)return '';const v=d.prodItems?.[pi];const hv=v!==null&&v!==undefined;const p2=hv?Math.min(Math.round((Number(v)/item.target)*100),150):null;const isNA2=v==='na';return '<td style="padding:5px 3px;text-align:center">'+(isNA2?'<div style="font-size:15px;color:#333;font-style:italic">N/A</div>':hv?'<div style="font-size:15px;font-weight:bold;color:'+sc(Math.min(p2,100))+'">'+v+'</div><div style="font-size:17px;color:'+sc(Math.min(p2,100))+'">'+p2+'%</div><div style="height:3px;background:#EEE;border-radius:2px;margin-top:2px;overflow:hidden"><div style="height:100%;width:'+Math.min(p2,100)+'%;background:'+sc(Math.min(p2,100))+';border-radius:2px"></div></div>':'<div style="font-size:16px;color:#444">&#8212;</div>')+'</td>';}).join('')}
+          </tr>`).join('')}
+        </table>
+      </div>
+    </div>`:''}
+
+    <div class="card" style="margin-bottom:9px">
+      <button class="sec-toggle open" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">🧹 Protocol — ${e.st}</div><span class="arr">&#9654;</span></button><div class="sec-body open">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><div style="font-size:17px;color:#333">${pd} / ${pdApplicable} applicable${pdNA>0?' <span style="color:#444;font-size:15px">('+pdNA+' N/A)</span>':''}</div><div style="font-size:16px;font-weight:bold;color:${sc(pp)}">${pp}%</div></div>
+      ${protoHtml}
+</div>
+    </div>
+    ${wasteItems.length?`<div class="card" style="margin-bottom:9px">
+      <button class="sec-toggle" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">🗑️ Waste &amp; Leftovers — ${WEEK[curProfDay].full}</div><span class="arr">&#9654;</span></button><div class="sec-body">
+      <div style="font-size:17px;color:#333;margin-bottom:8px;margin-top:8px">Enter quantity remaining / wasted at end of shift. Leave 0 if none.</div>
+      ${wasteHtml}
+</div>
+    </div>`:''}
+    <div class="card" style="margin-bottom:9px"><button class="sec-toggle" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">⚠️ Remarks / Incidents</div><span class="arr">&#9654;</span></button><div class="sec-body"><textarea class="field" rows="3" placeholder="Add a remark..." oninput="setRmk(this.value)">${day.remarks||''}</textarea>
+</div></div>`:
+    `<div style="padding:11px;background:#F9F8F5;border:1px solid #E8E4DC;border-radius:8px;font-size:15px;color:#333;text-align:center">${e.name} is <strong>off</strong> on ${WEEK[curProfDay].full}.</div>`}
+    ${incLog?`<div class="card"><div class="stitle" style="margin-top:0">📋 Incident Log</div>${incLog}</div>`:''}`;
+}
+function setPDay(i){curProfDay=i;renderProf();}
+function togProto(i){
+  if(!SD[curEmpId]||!SD[curEmpId][curProfDay])return;
+  const cur=SD[curEmpId][curProfDay].protocol[i];
+  // Cycle: false -> true -> false (N/A handled separately)
+  if(cur==='na')return; // can't check an N/A item, use undo first
+  SD[curEmpId][curProfDay].protocol[i]=!cur;
+  saveAll();renderProf();
+}
+function togProtoNA(i){
+  if(!SD[curEmpId]||!SD[curEmpId][curProfDay])return;
+  const cur=SD[curEmpId][curProfDay].protocol[i];
+  SD[curEmpId][curProfDay].protocol[i]=cur==='na'?false:'na';
+  saveAll();renderProf();
+}
+function setProdItem(idx,v){if(!SD[curEmpId]||!SD[curEmpId][curProfDay])return;const emp=emps.find(x=>x.id===curEmpId);if(!SD[curEmpId][curProfDay].prodItems)SD[curEmpId][curProfDay].prodItems=(PROD_ITEMS[emp?.st]||[]).map(()=>null);SD[curEmpId][curProfDay].prodItems[idx]=v===''?null:Number(v);saveAll();setTimeout(renderProf,0);}
+function toggleNA(idx){if(!SD[curEmpId]||!SD[curEmpId][curProfDay])return;const emp=emps.find(x=>x.id===curEmpId);if(!SD[curEmpId][curProfDay].prodItems)SD[curEmpId][curProfDay].prodItems=(PROD_ITEMS[emp?.st]||[]).map(()=>null);const cur=SD[curEmpId][curProfDay].prodItems[idx];SD[curEmpId][curProfDay].prodItems[idx]=cur==='na'?null:'na';saveAll();setTimeout(renderProf,0);}
+function setWaste(i,v){if(!SD[curEmpId]||!SD[curEmpId][curProfDay])return;if(!SD[curEmpId][curProfDay].waste)SD[curEmpId][curProfDay].waste=[];SD[curEmpId][curProfDay].waste[i]=v;saveAll();}
+function setRmk(v){if(!SD[curEmpId]||!SD[curEmpId][curProfDay])return;SD[curEmpId][curProfDay].remarks=v;saveAll();}
+
+// ── DELIVERY ──────────────────────────────────────────────────────────────────
+function renderDelivery(){
+  document.getElementById('del-day-btns').innerHTML=WEEK.map((w,i)=>{const cnt=DEL[i]?.deliveries?.length||0;return `<button class="daybtn${i===curDelDay?' active':''}" onclick="selDelDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div>${cnt?`<div style="font-size:15px;color:${i===curDelDay?'rgba(255,255,255,.8)':'#8B6220'}">${cnt} log</div>`:''}</button>`;}).join('');
+  const deliveries=DEL[curDelDay]?.deliveries||[];
+  document.getElementById('delivery-content').innerHTML=`
+    ${deliveries.length===0?`<div style="padding:12px;background:#FFF8F0;border:1px solid #F0D5B0;border-radius:8px;font-size:15px;color:#333;text-align:center;margin-bottom:10px">No deliveries logged for ${WEEK[curDelDay].full}.</div>`:''}
+    ${deliveries.map((d,i)=>`<div class="card" style="margin-bottom:9px;border-left:4px solid ${d.onTime===true&&d.correct===true?'#27AE60':d.onTime===false||d.correct===false?'#E74C3C':'#8B6220'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><div style="font-size:16px;font-weight:bold">Delivery #${i+1} — ${WEEK[curDelDay].full}</div><div style="font-size:17px;color:#444;margin-top:1px">Responsible: <strong>Olivier</strong></div></div><button onclick="removeDel(${i})" style="background:#FFF5F5;border:1px solid #FFCCCC;border-radius:5px;padding:4px 8px;font-size:17px;color:#E74C3C">Remove</button></div>
+      <div style="margin-bottom:10px"><div class="flabel">Transfer Time Window</div><div style="display:flex;gap:5px;flex-wrap:wrap">${TRANSFER_WINDOWS.map(w=>`<button class="rbtn${d.window===w.value?' sel':''}" onclick="setDelField(${i},'window','${w.value}')">${w.label}</button>`).join('')}</div>${d.window?`<div style="font-size:16px;font-weight:bold;margin-top:4px;color:${d.window==='9-11'||d.window==='11-14'?'#27AE60':'#E67E22'}">${d.window==='9-11'?'✓ Optimal (9am–11am)':d.window==='11-14'?'✓ Acceptable (11am–2pm)':'⚠️ Outside preferred window'}</div>`:''}</div>
+      <div style="margin-bottom:10px"><div class="flabel">Delivered on time?</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="rbtn${d.onTime===true?' sel-green':''}" onclick="setDelField(${i},'onTime',true)">✓ On time</button><button class="rbtn${d.onTime===false?' sel-red':''}" onclick="setDelField(${i},'onTime',false)">✗ Late</button></div></div>
+      <div style="margin-bottom:10px"><div class="flabel">Delivery correct & complete?</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="rbtn${d.correct===true?' sel-green':''}" onclick="setDelField(${i},'correct',true)">✓ Correct</button><button class="rbtn${d.correct===false?' sel-red':''}" onclick="setDelField(${i},'correct',false)">✗ Issues</button></div></div>
+      <div style="margin-bottom:10px"><div class="flabel">Delivery Location</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="rbtn${d.location==='restaurant'?' sel':''}" onclick="setDelField(${i},'location','restaurant')">🏠 Restaurant</button><button class="rbtn${d.location==='1819'?' sel':''}" onclick="setDelField(${i},'location','1819')">🏢 1819</button><button class="rbtn${d.location==='both'?' sel':''}" onclick="setDelField(${i},'location','both')">Both</button></div></div>
+      <div style="margin-bottom:9px"><div class="flabel">Notes / Issues</div><textarea class="field" rows="2" placeholder="Notes..." oninput="setDelNotes(${i},this.value)">${d.notes||''}</textarea></div>
+      ${d.onTime!==null&&d.correct!==null?`<div style="padding:6px 10px;background:${d.onTime&&d.correct?'#F0FAF4':'#FFF5F5'};border:1px solid ${d.onTime&&d.correct?'#B7DFCA':'#FFCCCC'};border-radius:6px;font-size:17px;font-weight:bold;color:${d.onTime&&d.correct?'#27AE60':'#E74C3C'}">${d.onTime&&d.correct?'✓ Delivery completed successfully':'⚠️ Delivery had issues — review with Olivier'}</div>`:''}
+    </div>`).join('')}
+    <button onclick="addDelivery()" style="width:100%;background:#8B6220;border:none;border-radius:7px;padding:10px;color:#fff;font-size:15px;letter-spacing:.1em;text-transform:uppercase;margin-top:3px">+ Log New Delivery</button>`;
+}
+function selDelDay(i){curDelDay=i;save('curDelDay2',i);renderDelivery();}
+function addDelivery(){DEL[curDelDay].deliveries.push({window:null,onTime:null,correct:null,location:null,notes:''});saveAll();renderDelivery();}
+function removeDel(i){DEL[curDelDay].deliveries.splice(i,1);saveAll();renderDelivery();}
+function setDelField(i,f,v){DEL[curDelDay].deliveries[i][f]=v;saveAll();renderDelivery();}
+function setDelNotes(i,v){DEL[curDelDay].deliveries[i].notes=v;saveAll();}
+
+// ── INVENTORY ─────────────────────────────────────────────────────────────────
+function selLoc(loc,btn){
+  curInvLoc=loc;save('curInvLoc',loc);
+  document.querySelectorAll('.loc-btn').forEach(b=>{b.classList.remove('active');b.style.color=b.id==='loc-kitchen'?'#8B6220':b.id==='loc-basement'?'#7F8C8D':'#2980B9';b.style.background='#fff';});
+  btn.classList.add('active');btn.style.background=btn.id==='loc-kitchen'?'#8B6220':btn.id==='loc-basement'?'#7F8C8D':'#2980B9';btn.style.color='#fff';
+  // Reset cat to first available
+  const cats=[...new Set(INV_ITEMS.filter(i=>i.loc===loc).map(i=>i.cat))];
+  if(cats.length&&!cats.includes(curInvCat))curInvCat=cats[0];
+  renderInventory();
+}
+
+function renderInventory(){
+  // Category tabs
+  const locItems=INV_ITEMS.filter(i=>i.loc===curInvLoc);
+  const cats=[...new Set(locItems.map(i=>i.cat))];
+  document.getElementById('inv-cat-tabs').innerHTML=cats.map(cat=>{
+    const cfg=INV_CATEGORIES[cat]||{label:cat,color:'#222'};
+    const a=cat===curInvCat;
+    return `<button class="mbtn${a?' active':''}" onclick="selInvCat('${cat}')" style="${a?`background:${cfg.color};border-color:${cfg.color};color:#fff`:''}">${cfg.label}</button>`;
+  }).join('');
+
+  // Day tabs
+  document.getElementById('inv-day-btns').innerHTML=WEEK.map((w,i)=>{const a=i===curInvDay;return `<button class="daybtn${a?' active':''}" onclick="selInvDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div></button>`;}).join('');
+
+  const items=locItems.filter(i=>i.cat===curInvCat);
+  const cfg=INV_CATEGORIES[curInvCat]||{label:curInvCat,color:'#222'};
+  const locLabel={kitchen:'🍳 Kitchen',basement:'🏗️ Basement','1819':'🏢 1819'}[curInvLoc];
+
+  if(!items.length){document.getElementById('inv-content').innerHTML=`<div style="padding:14px;background:#F9F8F5;border:1px solid #E8E4DC;border-radius:8px;font-size:15px;color:#333;text-align:center">No items in this category for ${locLabel}. Add items via the + Add tab.</div>`;return;}
+
+  const dayData=INV_DAY[curInvDay]||{};
+  document.getElementById('inv-content').innerHTML=`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:16px;font-weight:bold;color:${cfg.color}">${cfg.label}</div>
+          <div style="font-size:17px;color:#333;margin-top:2px">${locLabel} · ${WEEK[curInvDay].full} · ${items.length} items</div>
+        </div>
+        <div style="display:flex;gap:8px;font-size:16px;color:#333">
+          <span style="background:#F0FAF4;color:#27AE60;padding:2px 8px;border-radius:3px;border:1px solid #B7DFCA">✓ OK</span>
+          <span style="background:#FFF8F0;color:#E67E22;padding:2px 8px;border-radius:3px;border:1px solid #F0D5B0">⚠ Low</span>
+          <span style="background:#FFF5F5;color:#E74C3C;padding:2px 8px;border-radius:3px;border:1px solid #FFCCCC">✗ Out</span>
+        </div>
+      </div>
+      <!-- Header row -->
+      <div style="display:grid;grid-template-columns:1fr 80px 90px 90px 1fr;gap:6px;font-size:15px;color:#333;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;padding:0 9px">
+        <span>Product</span><span style="text-align:center">Par</span><span style="text-align:center">On Hand</span><span style="text-align:center">Status</span><span>Notes</span>
+      </div>
+      ${items.map(item=>{
+        const d=dayData[item.id]||{qty:'',status:'',notes:''};
+        const qty=Number(d.qty);const hasQty=d.qty!=='';
+        return `<div class="inv-row" style="grid-template-columns:1fr 80px 90px 90px 1fr;display:grid;gap:6px;align-items:center">
+          <div style="min-width:0"><div style="font-size:15px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.n}</div><div style="font-size:15px;color:#333">${item.par} par · ${item.supplier||'—'}</div></div>
+          <div style="text-align:center;font-size:16px;color:${cfg.color};font-weight:bold">${item.par}</div>
+          <div style="text-align:center"><input type="number" min="0" class="inv-qty" value="${d.qty}" placeholder="—" oninput="setInvQty('${item.id}',this.value)" style="border-color:${d.status==='out'?'#E74C3C':d.status==='low'?'#E67E22':'#DDD'}"/></div>
+          <div style="text-align:center"><select class="field" style="padding:4px 5px;font-size:16px;width:86px" onchange="setInvStatus('${item.id}',this.value)">
+            <option value="" ${!d.status?'selected':''}>—</option>
+            <option value="ok" ${d.status==='ok'?'selected':''} style="color:#27AE60">✓ OK</option>
+            <option value="low" ${d.status==='low'?'selected':''} style="color:#E67E22">⚠ Low</option>
+            <option value="out" ${d.status==='out'?'selected':''} style="color:#E74C3C">✗ Out</option>
+          </select></div>
+          <div><input class="field" style="font-size:17px;padding:5px 8px" value="${d.notes||''}" placeholder="Note..." oninput="setInvNotes('${item.id}',this.value)"/></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+function selInvCat(c){curInvCat=c;save('curInvCat',c);renderInventory();}
+function selInvDay(i){curInvDay=i;save('curInvDay',i);renderInventory();}
+function getInvDay(){if(!INV_DAY[curInvDay])INV_DAY[curInvDay]={};return INV_DAY[curInvDay];}
+function setInvQty(id,v){const d=getInvDay();if(!d[id])d[id]={qty:'',status:'',notes:''};d[id].qty=v;saveAll();}
+function setInvStatus(id,v){const d=getInvDay();if(!d[id])d[id]={qty:'',status:'',notes:''};d[id].status=v;saveAll();}
+function setInvNotes(id,v){const d=getInvDay();if(!d[id])d[id]={qty:'',status:'',notes:''};d[id].notes=v;saveAll();}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function renderActions(){
+  document.getElementById('act-day-btns').innerHTML=WEEK.map((w,i)=>`<button class="daybtn${i===curActDay?' active':''}" onclick="selActDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div></button>`).join('');
+  document.getElementById('act-day-label').textContent=WEEK[curActDay].full;
+  const fridge=ACT_FRIDGE[curActDay];
+  document.getElementById('fridge-checks').innerHTML=FRIDGE_ITEMS.map(item=>{const done=fridge[item.id];return `<div class="crow${done?' done':''}" onclick="togFridge('${item.id}')"><div class="cbox${done?' done':''}"><svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="ctext">${item.text}</span></div>`;}).join('');
+  const customs=ACT_CUSTOM[curActDay];
+  ACTION_TEMPLATES.forEach(t=>{if(!customs.find(c=>c.text===t.text))customs.push({text:t.text,done:false});});
+  document.getElementById('custom-actions-list').innerHTML=customs.length?customs.map((c,i)=>`<div class="crow${c.done?' done':''}" onclick="togCustom(${i})"><div class="cbox${c.done?' done':''}"><svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="ctext">${c.text}</span><button onclick="event.stopPropagation();removeCustom(${i})" style="background:none;border:none;color:#999;font-size:17px;padding:0 2px;line-height:1">×</button></div>`).join(''):
+  `<div style="font-size:17px;color:#333;padding:7px 0">No custom actions. Add one below.</div>`;
+  document.getElementById('act-notes').value=ACT_NOTES[curActDay]||'';
+}
+function selActDay(i){curActDay=i;save('curActDay2',i);renderActions();}
+function togFridge(id){ACT_FRIDGE[curActDay][id]=!ACT_FRIDGE[curActDay][id];saveAll();renderActions();}
+function togCustom(i){ACT_CUSTOM[curActDay][i].done=!ACT_CUSTOM[curActDay][i].done;saveAll();renderActions();}
+function removeCustom(i){ACT_CUSTOM[curActDay].splice(i,1);saveAll();renderActions();}
+function addCustomAction(){const inp=document.getElementById('new-action-text');const text=inp.value.trim();if(!text)return;ACT_CUSTOM[curActDay].push({text,done:false});inp.value='';saveAll();renderActions();}
+function saveActNotes(){ACT_NOTES[curActDay]=document.getElementById('act-notes').value;saveAll();}
+
+// ── CHART ─────────────────────────────────────────────────────────────────────
+function setMetric(m,btn){curMetric=m;document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderChart();}
+function renderChart(){
+  const scored=emps.map(e=>({...e,pt:empProt(e.id),pr:empProd(e.id),ov:empOverall(e.id)}));
+  const gv=e=>curMetric==='overall'?e.ov:curMetric==='protocol'?e.pt:Math.min(e.pr,100);
+  const sorted=[...scored].sort((a,b)=>gv(b)-gv(a));
+  const avg=Math.round(scored.reduce((a,e)=>a+e.ov,0)/scored.length);
+  document.getElementById('chart-sum').innerHTML=[['🏆 Top Performer',sorted[0]?.name,'#27AE60'],['📊 Team Average',avg+'%','#8B6220'],['⚠️ Below 55%',scored.filter(e=>e.ov<55).length+' staff','#E74C3C']].map(([l,v,c])=>`<div class="card"><div style="font-size:16px;color:#333;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px">${l}</div><div style="font-size:16px;color:${c};font-weight:bold">${v}</div></div>`).join('');
+  document.getElementById('chart-bars').innerHTML=`<div style="display:flex;gap:9px;margin-bottom:10px;flex-wrap:wrap">${[['#27AE60','≥80%'],['#E67E22','55–79%'],['#E74C3C','<55%']].map(([c,l])=>`<div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:2px;background:${c}"></div><span style="font-size:16px;color:#333">${l}</span></div>`).join('')}</div><div style="display:flex;flex-direction:column;gap:6px">${sorted.map((e,i)=>{const val=gv(e);const stc=ST[e.st]||{color:'#222',target:0,unit:''};const wd=SD[e.id]?.filter(d=>d.working&&d.produced!==null)||[];const avg=wd.length?Math.round(wd.reduce((a,d)=>a+Number(d.produced),0)/wd.length):null;return `<div onclick="openProfFromStaff(${e.id})" style="cursor:pointer;display:flex;align-items:center;gap:7px" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'"><div style="font-size:15px;color:#444;width:17px;text-align:right;flex-shrink:0">#${i+1}</div><div style="width:150px;flex-shrink:0"><div style="font-size:17px;color:#333;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div><div style="font-size:15px;color:${stc.color}">${e.st}${avg!==null?' · '+avg+'/'+stc.target+' '+stc.unit:''}</div></div><div class="barcont"><div class="barfill" style="width:${val}%;background:${sc(val)};min-width:${val>0?26:0}px">${val}%</div></div></div>`;}).join('')}</div>`;
+  document.getElementById('st-avgs').innerHTML=Object.entries(ST).map(([n,s])=>{const se=scored.filter(e=>e.st===n);if(!se.length)return'';const a=Math.round(se.reduce((acc,e)=>acc+e.ov,0)/se.length);return `<div class="card" style="border-left:4px solid ${s.color}"><div style="font-size:15px;color:${s.color};letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;font-weight:bold">${n}</div><div style="font-size:17px;font-weight:bold;color:${sc(a)}">${a}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:15px;color:#333;margin-top:1px">${se.length} staff · ${s.target} ${s.unit}/day</div></div>`;}).join('');
+}
+
+// ── ADD ───────────────────────────────────────────────────────────────────────
+function renderAdd(){
+  const sel=document.getElementById('ns');if(sel&&sel.options.length===0){Object.keys(ST).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});}updateHint();
+}
+function switchAdd(tab,btn){
+  ['add-emp-form','add-action-form','add-product-form'].forEach(id=>{document.getElementById(id).style.display='none';});
+  document.getElementById('add-'+tab+'-form').style.display='block';
+  document.querySelectorAll('#view-add .mbtn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+}
+function updateHint(){const s=document.getElementById('ns')?.value;const h=document.getElementById('nhint');if(h&&s&&ST[s]){h.textContent=`Target: ${ST[s].target} ${ST[s].unit}/day`;}}
+function addEmp(){
+  const name=document.getElementById('nn').value.trim();if(!name)return;
+  const id=Date.now();
+  const e={id,name,st:document.getElementById('ns').value,sh:document.getElementById('nsh').value,role:document.getElementById('nr').value,rate:parseFloat(document.getElementById('nrate').value)||17,note:document.getElementById('nnote').value};
+  emps.push(e);SCHED[id]=WEEK.map(()=>"Off");SD[id]=WEEK.map((_,di)=>makeDay(e,di));
+  ['nn','nr','nrate','nnote'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  saveAll();showView('staff');
+}
+function addActionTemplate(){const text=document.getElementById('act-desc').value.trim();if(!text)return;ACTION_TEMPLATES.push({text,cat:document.getElementById('act-cat').value});document.getElementById('act-desc').value='';saveAll();alert('Action template saved!');}
+function addProduct(){
+  const name=document.getElementById('prod-name').value.trim();if(!name)return;
+  INV_ITEMS.push({id:Math.random().toString(36).slice(2),n:name,cat:document.getElementById('prod-cat').value,loc:document.getElementById('prod-loc').value,par:document.getElementById('prod-par').value,supplier:document.getElementById('prod-supplier').value});
+  ['prod-name','prod-par','prod-supplier'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  saveAll();showView('inventory');
+}
+function makeDay(e,di){const sc2=SCHED[e.id]?.[di]||"Off";const w=sc2!=="Off"&&sc2!=="Barista"&&sc2!=="Cake";return{sched:sc2,produced:null,protocol:(PROTO[e.st]||[]).map(()=>false),waste:(WASTE_ITEMS[e.st]||[]).map(()=>""),remarks:"",working:w};}
+
+function secToggle(el){el.classList.toggle('open');var b=el.nextElementSibling;b.classList.toggle('open');}
+loadFromSupabase();
+</script>
+</body>
+</html>
