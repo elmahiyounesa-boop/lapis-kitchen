@@ -222,7 +222,6 @@ textarea.field{resize:vertical;line-height:1.5}
     <div style="margin-bottom:9px"><label class="flabel">Station</label><select class="field" id="ns" onchange="updateHint()"></select><div id="nhint" style="font-size:16px;margin-top:3px;color:#8B6220;font-weight:bold"></div></div>
     <div style="margin-bottom:9px"><label class="flabel">Shift</label><select class="field" id="nsh"><option>AM</option><option>PM</option></select></div>
     <div style="margin-bottom:9px"><label class="flabel">Role / Tasks</label><input class="field" id="nr" placeholder="e.g. Prep dumplings"/></div>
-    <div style="margin-bottom:9px"><label class="flabel">Hourly Rate ($)</label><input class="field" id="nrate" type="number" placeholder="17.00"/></div>
     <div style="margin-bottom:14px"><label class="flabel">Notes</label><textarea class="field" id="nnote" rows="2" placeholder="Any note..."></textarea></div>
     <button onclick="addEmp()" style="width:100%;background:#8B6220;border:none;border-radius:6px;padding:10px;color:#fff;font-size:15px;letter-spacing:.1em;text-transform:uppercase">Add Employee</button>
   </div>
@@ -878,41 +877,41 @@ const DEFAULT_INV_ITEMS=[
 const SCHED={1:["3:30–11:30","2pm–11:30","2pm–11:30","3:30–11:30","2pm–11:30","Off","Off"],2:["2pm–11:30","Off","Off","2pm–11:30","Off","1pm–12:30","2pm–11:30"],3:["7am–3pm","Off","Off","7am–3pm","7am–3pm","8am–4pm","8am–4pm"],4:["Off","3:30–11:30","3:30–11:30","3:30–11:30","Off","8am–5pm","8am–5pm"],5:["3:30–11:30","3:30–11:30","3:30–11:30","Off","Off","3:30–11:30","Off"],6:["Off","Off","3:30–11:30","Off","3:30–11:30","3:30–11:30","3:30–11:30"],7:["Barista","3:30–11:30","Off","Off","3:30–11:30","Off","Off"],8:["7am–3pm","7am–3pm","3:30–11:30","3:30–11:30","3:30–11:30","Off","Off"],9:["Off","Off","Off","3:30–11:30","3:30–11:30","3:30–11:30","3:30–11:30"],10:["3:30–11:30","Off","9am–4pm","Off","8am–4pm","8am–4pm","8am–4pm"],11:["3:30–10pm","Off","10am–5pm","Off","2pm–10pm","9am/4pm","9am/4pm"],12:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],13:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],14:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],15:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],16:["7am–2pm","7am–2pm","7am–2pm","Off","Off","Off","Off"],17:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],18:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],19:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],20:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],21:["7am–3pm","Off","7am–3pm","7am–3pm","7am–3pm","Off","Off"],22:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],23:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],24:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],25:["7am–3pm","Off","Off","7am–3pm","7am–3pm","Cake","Off"],26:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],27:["4pm–12:30","4pm–12:30","Off","Off","4pm–2am","Off","4am–1am"],28:["Off","7am–3pm","7am–3pm","Off","7am–3pm","8am–6pm","Off"],29:["Off","Off","Off","Off","6am–1am","8am–9pm","6am–6pm"],30:["Off","7am–2pm","4am–1am","Off","7am–3pm","6am–2am","Off"],31:["8am–4pm","Off","8am–4pm","Off","8am–4pm","8am–3pm","Off"],32:["4pm–11:30","4pm–11:30","4am–1am","4am–1am","1pm–8pm","Off","Off"],33:["7am–4pm","7am–4pm","Off","Off","7am–4pm","Off","Off"],34:["8am–4pm","Off","8am–4pm","8am–4pm","8am–4pm","Off","8am–4pm"],35:["Off","8am–4pm","Off","4am–1am","Off","4pm–2am","4am–1am"]};
 
 let emps=load('emps2',[
-  {id:1,name:"Santos, Jose",st:"Grill",sh:"PM",role:"Grill (Tue/Wed/Fri)·Mon/Thu lines",rate:19.0,note:"Night Line / 1819"},
-  {id:2,name:"Bonilla, Ignacio",st:"Grill",sh:"PM",role:"Grill station",rate:18.0,note:""},
-  {id:3,name:"Ventura, Rodolfo",st:"Grill",sh:"AM",role:"Lunch all stations·Sat/Sun brunch grill",rate:17.0,note:""},
-  {id:4,name:"Gricelda Martinez (Liza)",st:"Salad",sh:"PM",role:"Salad station",rate:19.0,note:""},
-  {id:5,name:"Roads, Rebecca",st:"Salad",sh:"PM",role:"Salad station",rate:19.0,note:""},
-  {id:6,name:"Pineda, Dorian",st:"Salad",sh:"PM",role:"Salad / Middle station",rate:18.0,note:""},
-  {id:7,name:"Santos, Cindy",st:"Salad",sh:"PM",role:"Salad / Middle·Barista",rate:18.0,note:""},
-  {id:8,name:"Gonzales, Cristian",st:"Salad",sh:"AM",role:"Mon/Tue onions·Wed–Fri salad",rate:17.0,note:""},
-  {id:9,name:"Espinoza, Alan",st:"Middle Line",sh:"PM",role:"Middle station",rate:20.0,note:""},
-  {id:10,name:"Gabriel Martinez",st:"Middle Line",sh:"PM",role:"Mon salad·Wed lunch·Fri salad·Sat/Sun middle",rate:17.0,note:""},
-  {id:11,name:"Merino, Dolores",st:"Middle Line",sh:"PM",role:"Inventories·helping salad Fri–Sun",rate:19.0,note:"AM Shifts lead"},
-  {id:12,name:"Loaeza, Liliana",st:"Prep / AM",sh:"AM",role:"Main AM cook",rate:18.0,note:""},
-  {id:13,name:"Antunez, Cristian",st:"Prep / AM",sh:"AM",role:"Cooking all sauces / prep red chutney",rate:18.0,note:""},
-  {id:14,name:"Ayala, Orbelina",st:"Prep / AM",sh:"AM",role:"AM cook / prep",rate:17.0,note:""},
-  {id:15,name:"Natren, Dalila",st:"Prep / AM",sh:"AM",role:"Prep bolani potato / leek",rate:17.0,note:""},
-  {id:16,name:"Beltrand, Sutapa",st:"Prep / AM",sh:"AM",role:"Prep bolani beef",rate:17.0,note:"Mon–Wed only"},
-  {id:17,name:"Verde, M Bessy",st:"Prep / AM",sh:"AM",role:"Prep cook",rate:17.0,note:""},
-  {id:18,name:"Chavarria, Camila",st:"Prep / AM",sh:"AM",role:"Prep bolani pumpkin / sambossa spinach",rate:17.0,note:""},
-  {id:19,name:"Jacobo, Maria",st:"Prep / AM",sh:"AM",role:"Prep cook",rate:17.5,note:""},
-  {id:20,name:"Azizi, Haroon",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",rate:17.0,note:""},
-  {id:21,name:"Agh Mohamed",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",rate:17.0,note:""},
-  {id:22,name:"Bustillo, Carman",st:"Prep / AM",sh:"AM",role:"Prep / bagging food",rate:17.0,note:""},
-  {id:23,name:"Ayite, Anani",st:"Prep / AM",sh:"AM",role:"Cutting all meats",rate:17.0,note:"Fri 10am Meat Team"},
-  {id:24,name:"Machuca, Edith (Roxanna)",st:"Dumplings",sh:"AM",role:"Prep dumplings",rate:18.0,note:"Tue–Fri"},
-  {id:25,name:"Campos, Ana",st:"Dumplings",sh:"AM",role:"Dumplings / orange cake",rate:18.0,note:""},
-  {id:26,name:"Daniela Romero",st:"Dumplings",sh:"AM",role:"Dumplings",rate:17.0,note:""},
-  {id:27,name:"Flores, William",st:"Dishwasher",sh:"PM",role:"4pm–2am dishwasher",rate:17.0,note:""},
-  {id:28,name:"Bislao, Abalo",st:"Deep Cleaning",sh:"AM",role:"Dining rooms·fryer·oven·windows·1819·shopping with Olivier",rate:17.0,note:""},
-  {id:29,name:"Martin Hernandez",st:"Deep Cleaning",sh:"AM",role:"Dining room cleaning",rate:17.0,note:"Sat/Sun"},
-  {id:30,name:"Hounsounou, Justin (Cocou)",st:"Dishwasher",sh:"PM",role:"Tue/Fri dining rooms·fryer·oven·windows·1819",rate:17.0,note:""},
-  {id:31,name:"Rocha, Oscar",st:"Deep Cleaning",sh:"PM",role:"Dining room cleaning",rate:17.0,note:""},
-  {id:32,name:"Tovihlon, Komi",st:"Dishwasher",sh:"PM",role:"Dishwasher",rate:17.0,note:""},
-  {id:33,name:"Lucien Housessou (Fadel)",st:"Dishwasher",sh:"AM",role:"Dishwasher·shopping with Olivier",rate:17.5,note:""},
-  {id:34,name:"Miranda, Marlon",st:"Dishwasher",sh:"PM",role:"Dishwasher",rate:17.5,note:""},
-  {id:35,name:"Fransisco, Juan",st:"Dishwasher",sh:"AM",role:"Shopping / Dishwasher",rate:18.0,note:""},
+  {id:1,name:"Santos, Jose",st:"Grill",sh:"PM",role:"Grill (Tue/Wed/Fri)·Mon/Thu lines",note:"Night Line / 1819"},
+  {id:2,name:"Bonilla, Ignacio",st:"Grill",sh:"PM",role:"Grill station",note:""},
+  {id:3,name:"Ventura, Rodolfo",st:"Grill",sh:"AM",role:"Lunch all stations·Sat/Sun brunch grill",note:""},
+  {id:4,name:"Gricelda Martinez (Liza)",st:"Salad",sh:"PM",role:"Salad station",note:""},
+  {id:5,name:"Roads, Rebecca",st:"Salad",sh:"PM",role:"Salad station",note:""},
+  {id:6,name:"Pineda, Dorian",st:"Salad",sh:"PM",role:"Salad / Middle station",note:""},
+  {id:7,name:"Santos, Cindy",st:"Salad",sh:"PM",role:"Salad / Middle·Barista",note:""},
+  {id:8,name:"Gonzales, Cristian",st:"Salad",sh:"AM",role:"Mon/Tue onions·Wed–Fri salad",note:""},
+  {id:9,name:"Espinoza, Alan",st:"Middle Line",sh:"PM",role:"Middle station",note:""},
+  {id:10,name:"Gabriel Martinez",st:"Middle Line",sh:"PM",role:"Mon salad·Wed lunch·Fri salad·Sat/Sun middle",note:""},
+  {id:11,name:"Merino, Dolores",st:"Middle Line",sh:"PM",role:"Inventories·helping salad Fri–Sun",note:"AM Shifts lead"},
+  {id:12,name:"Loaeza, Liliana",st:"Prep / AM",sh:"AM",role:"Main AM cook",note:""},
+  {id:13,name:"Antunez, Cristian",st:"Prep / AM",sh:"AM",role:"Cooking all sauces / prep red chutney",note:""},
+  {id:14,name:"Ayala, Orbelina",st:"Prep / AM",sh:"AM",role:"AM cook / prep",note:""},
+  {id:15,name:"Natren, Dalila",st:"Prep / AM",sh:"AM",role:"Prep bolani potato / leek",note:""},
+  {id:16,name:"Beltrand, Sutapa",st:"Prep / AM",sh:"AM",role:"Prep bolani beef",note:"Mon–Wed only"},
+  {id:17,name:"Verde, M Bessy",st:"Prep / AM",sh:"AM",role:"Prep cook",note:""},
+  {id:18,name:"Chavarria, Camila",st:"Prep / AM",sh:"AM",role:"Prep bolani pumpkin / sambossa spinach",note:""},
+  {id:19,name:"Jacobo, Maria",st:"Prep / AM",sh:"AM",role:"Prep cook",note:""},
+  {id:20,name:"Azizi, Haroon",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",note:""},
+  {id:21,name:"Agh Mohamed",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",note:""},
+  {id:22,name:"Bustillo, Carman",st:"Prep / AM",sh:"AM",role:"Prep / bagging food",note:""},
+  {id:23,name:"Ayite, Anani",st:"Prep / AM",sh:"AM",role:"Cutting all meats",note:"Fri 10am Meat Team"},
+  {id:24,name:"Machuca, Edith (Roxanna)",st:"Dumplings",sh:"AM",role:"Prep dumplings",note:"Tue–Fri"},
+  {id:25,name:"Campos, Ana",st:"Dumplings",sh:"AM",role:"Dumplings / orange cake",note:""},
+  {id:26,name:"Daniela Romero",st:"Dumplings",sh:"AM",role:"Dumplings",note:""},
+  {id:27,name:"Flores, William",st:"Dishwasher",sh:"PM",role:"4pm–2am dishwasher",note:""},
+  {id:28,name:"Bislao, Abalo",st:"Deep Cleaning",sh:"AM",role:"Dining rooms·fryer·oven·windows·1819·shopping with Olivier",note:""},
+  {id:29,name:"Martin Hernandez",st:"Deep Cleaning",sh:"AM",role:"Dining room cleaning",note:"Sat/Sun"},
+  {id:30,name:"Hounsounou, Justin (Cocou)",st:"Dishwasher",sh:"PM",role:"Tue/Fri dining rooms·fryer·oven·windows·1819",note:""},
+  {id:31,name:"Rocha, Oscar",st:"Deep Cleaning",sh:"PM",role:"Dining room cleaning",note:""},
+  {id:32,name:"Tovihlon, Komi",st:"Dishwasher",sh:"PM",role:"Dishwasher",note:""},
+  {id:33,name:"Lucien Housessou (Fadel)",st:"Dishwasher",sh:"AM",role:"Dishwasher·shopping with Olivier",note:""},
+  {id:34,name:"Miranda, Marlon",st:"Dishwasher",sh:"PM",role:"Dishwasher",note:""},
+  {id:35,name:"Fransisco, Juan",st:"Dishwasher",sh:"AM",role:"Shopping / Dishwasher",note:""},
 ]);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -1109,7 +1108,7 @@ function renderProf(){
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:13px;padding-bottom:12px;border-bottom:2px solid #F0EDE6">
       <div><div style="font-size:16px;color:${stc.color};letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px">${e.st}</div>
       <h2 style="font-size:21px;font-weight:bold;margin-bottom:4px">${e.name}</h2>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px"><span class="tag" style="background:${stc.color}18;color:${stc.color}">${e.st}</span><span class="tag" style="background:${e.sh==='AM'?'#FDF9F3':'#F3F6FD'};color:${e.sh==='AM'?'#8B6914':'#1A4A8B'}">${e.sh} · $${e.rate}/hr</span></div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px"><span class="tag" style="background:${stc.color}18;color:${stc.color}">${e.st}</span><span class="tag" style="background:${e.sh==='AM'?'#FDF9F3':'#F3F6FD'};color:${e.sh==='AM'?'#8B6914':'#1A4A8B'}">${e.sh}</span></div>
       <div style="font-size:17px;color:#444">${e.role}</div>${e.note?`<div style="font-size:16px;color:#8B6220;margin-top:2px">${e.note}</div>`:''}</div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">${[['OVERALL',ov],[e.st==='Prep / AM'?'PROTO 30%':'PROTO 55%',wp],[e.st==='Prep / AM'?'PROD 70%':'PROD 45%',Math.min(wpr,100)]].map(([l,v])=>`<div style="text-align:center;padding:6px 9px;background:#FAFAF8;border-radius:7px;border:1px solid #E8E4DC;min-width:60px"><div style="font-size:19px;font-weight:bold;color:${sc(v)};line-height:1">${v}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:17px;color:#333;letter-spacing:.06em;margin-top:2px">${l}</div></div>`).join('')}</div>
     </div>
@@ -1362,9 +1361,9 @@ function updateHint(){const s=document.getElementById('ns')?.value;const h=docum
 function addEmp(){
   const name=document.getElementById('nn').value.trim();if(!name)return;
   const id=Date.now();
-  const e={id,name,st:document.getElementById('ns').value,sh:document.getElementById('nsh').value,role:document.getElementById('nr').value,rate:parseFloat(document.getElementById('nrate').value)||17,note:document.getElementById('nnote').value};
+  const e={id,name,st:document.getElementById('ns').value,sh:document.getElementById('nsh').value,role:document.getElementById('nr').value,note:document.getElementById('nnote').value};
   emps.push(e);SCHED[id]=WEEK.map(()=>"Off");SD[id]=WEEK.map((_,di)=>makeDay(e,di));
-  ['nn','nr','nrate','nnote'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  ['nn','nr','nnote'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
   saveAll();showView('staff');
 }
 function addActionTemplate(){const text=document.getElementById('act-desc').value.trim();if(!text)return;ACTION_TEMPLATES.push({text,cat:document.getElementById('act-cat').value});document.getElementById('act-desc').value='';saveAll();alert('Action template saved!');}
