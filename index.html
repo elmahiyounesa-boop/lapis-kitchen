@@ -207,9 +207,9 @@ textarea.field{resize:vertical;line-height:1.5}
   <div class="card"><div class="stitle" style="margin-top:0">📝 Notes & Photos</div>
     <textarea class="field" id="act-notes" rows="3" placeholder="General notes for this day..." oninput="saveActNotes()"></textarea>
     <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
-      <label class="photo-add-btn" for="act-photo-input">📷 Ajouter des photos</label>
+      <label class="photo-add-btn" for="act-photo-input">📷 Add Photos</label>
       <input type="file" id="act-photo-input" accept="image/*" multiple style="display:none" onchange="addActPhotos(this.files);this.value=''"/>
-      <span style="font-size:13px;color:#888">Photos stockées sur cet appareil (compressées automatiquement)</span>
+      <span style="font-size:13px;color:#888">Photos stored on this device (auto-compressed)</span>
     </div>
     <div id="act-photos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px"></div>
   </div>
@@ -239,13 +239,13 @@ textarea.field{resize:vertical;line-height:1.5}
 <!-- REPORT -->
 <div id="view-report" class="page" style="max-width:880px">
   <p class="plabel">Reporting — Lapis BOH</p>
-  <h1 class="ptitle">Rapport d'activités</h1>
+  <h1 class="ptitle">Activity Report</h1>
   <div id="rep-controls" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
-    <button class="mbtn active" id="rep-daily-btn" onclick="setRepMode('daily')">📅 Journalier</button>
-    <button class="mbtn" id="rep-weekly-btn" onclick="setRepMode('weekly')">🗓️ Hebdomadaire</button>
-    <button class="mbtn" onclick="sendReportEmail()" style="margin-left:auto;background:#2980B9;color:#fff;border-color:#2980B9">📧 Envoyer par email</button>
-    <button class="mbtn" onclick="changeReportEmail()" title="Changer le destinataire" style="background:#fff;color:#2980B9;border-color:#2980B9">✏️</button>
-    <button class="mbtn" onclick="window.print()" style="background:#27AE60;color:#fff;border-color:#27AE60">🖨️ Imprimer / PDF</button>
+    <button class="mbtn active" id="rep-daily-btn" onclick="setRepMode('daily')">📅 Daily</button>
+    <button class="mbtn" id="rep-weekly-btn" onclick="setRepMode('weekly')">🗓️ Weekly</button>
+    <button class="mbtn" onclick="sendReportEmail()" style="margin-left:auto;background:#2980B9;color:#fff;border-color:#2980B9">📧 Send by Email</button>
+    <button class="mbtn" onclick="changeReportEmail()" title="Change recipient" style="background:#fff;color:#2980B9;border-color:#2980B9">✏️</button>
+    <button class="mbtn" onclick="window.print()" style="background:#27AE60;color:#fff;border-color:#27AE60">🖨️ Print / PDF</button>
   </div>
   <div id="rep-day-btns" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px"></div>
   <div id="report-content"></div>
@@ -1272,9 +1272,9 @@ function renderProf(){
     </div>`:''}
     <div class="card" style="margin-bottom:9px"><button class="sec-toggle" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">⚠️ Remarks / Incidents</div><span class="arr">&#9654;</span></button><div class="sec-body"><textarea class="field" rows="3" placeholder="Add a remark..." oninput="setRmk(this.value)">${day.remarks||''}</textarea>
       <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
-        <label class="photo-add-btn" for="rem-photo-input">📷 Joindre des photos</label>
+        <label class="photo-add-btn" for="rem-photo-input">📷 Attach Photos</label>
         <input type="file" id="rem-photo-input" accept="image/*" multiple style="display:none" onchange="addRemPhotos(this.files);this.value=''"/>
-        <span style="font-size:13px;color:#888">Preuve photo de l'incident (stockée sur cet appareil)</span>
+        <span style="font-size:13px;color:#888">Photo evidence of the incident (stored on this device)</span>
       </div>
       <div id="rem-photos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">${remPhotosHtml(e.id,curProfDay)}</div>
 </div></div>`:
@@ -1429,12 +1429,12 @@ function compressImage(file,cb){
 }
 function addActPhotos(files){
   if(!ACT_PHOTOS[curActDay])ACT_PHOTOS[curActDay]=[];
-  if(ACT_PHOTOS[curActDay].length+files.length>12){alert('Maximum 12 photos par jour.');return;}
+  if(ACT_PHOTOS[curActDay].length+files.length>12){alert('Maximum 12 photos per day.');return;}
   Array.from(files).forEach(f=>{
     if(!f.type.startsWith('image/'))return;
     compressImage(f,data=>{
       ACT_PHOTOS[curActDay].push({data,name:f.name,ts:Date.now()});
-      try{save('ACT_PHOTOS',ACT_PHOTOS);}catch(e){ACT_PHOTOS[curActDay].pop();alert('Stockage plein — supprimez d\'anciennes photos.');}
+      try{save('ACT_PHOTOS',ACT_PHOTOS);}catch(e){ACT_PHOTOS[curActDay].pop();alert('Storage full — delete some old photos.');}
       renderActPhotos();
     });
   });
@@ -1443,30 +1443,30 @@ function remKey(){return curEmpId+'_'+curProfDay;}
 function remPhotosHtml(empId,di){
   const ph=REM_PHOTOS[empId+'_'+di]||[];
   return ph.length?ph.map((p,i)=>`<div class="photo-thumb"><img src="${p.data}" onclick="viewRemPhoto('${empId+'_'+di}',${i})" title="${p.name||''}"/><button class="photo-del" onclick="removeRemPhoto('${empId+'_'+di}',${i})">×</button></div>`).join(''):
-  '<div style="font-size:14px;color:#999">Aucune photo jointe.</div>';
+  '<div style="font-size:14px;color:#999">No photos attached.</div>';
 }
 function addRemPhotos(files){
   const k=remKey();
   if(!REM_PHOTOS[k])REM_PHOTOS[k]=[];
-  if(REM_PHOTOS[k].length+files.length>8){alert('Maximum 8 photos par remarque.');return;}
+  if(REM_PHOTOS[k].length+files.length>8){alert('Maximum 8 photos per remark.');return;}
   Array.from(files).forEach(f=>{
     if(!f.type.startsWith('image/'))return;
     compressImage(f,data=>{
       REM_PHOTOS[k].push({data,name:f.name,ts:Date.now()});
-      try{save('REM_PHOTOS',REM_PHOTOS);}catch(e){REM_PHOTOS[k].pop();alert('Stockage plein — supprimez d\'anciennes photos.');return;}
+      try{save('REM_PHOTOS',REM_PHOTOS);}catch(e){REM_PHOTOS[k].pop();alert('Storage full — delete some old photos.');return;}
       const el=document.getElementById('rem-photos');if(el)el.innerHTML=remPhotosHtml(curEmpId,curProfDay);
     });
   });
 }
-function removeRemPhoto(k,i){if(!confirm('Supprimer cette photo ?'))return;(REM_PHOTOS[k]||[]).splice(i,1);if(!REM_PHOTOS[k].length)delete REM_PHOTOS[k];save('REM_PHOTOS',REM_PHOTOS);const el=document.getElementById('rem-photos');if(el)el.innerHTML=remPhotosHtml(curEmpId,curProfDay);}
+function removeRemPhoto(k,i){if(!confirm('Delete this photo?'))return;(REM_PHOTOS[k]||[]).splice(i,1);if(!REM_PHOTOS[k].length)delete REM_PHOTOS[k];save('REM_PHOTOS',REM_PHOTOS);const el=document.getElementById('rem-photos');if(el)el.innerHTML=remPhotosHtml(curEmpId,curProfDay);}
 function viewRemPhoto(k,i){const p=(REM_PHOTOS[k]||[])[i];if(!p)return;const w=window.open('');w.document.write('<body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="'+p.data+'" style="max-width:100%;max-height:100vh"/></body>');}
-function removeActPhoto(i){if(!confirm('Supprimer cette photo ?'))return;ACT_PHOTOS[curActDay].splice(i,1);save('ACT_PHOTOS',ACT_PHOTOS);renderActPhotos();}
+function removeActPhoto(i){if(!confirm('Delete this photo?'))return;ACT_PHOTOS[curActDay].splice(i,1);save('ACT_PHOTOS',ACT_PHOTOS);renderActPhotos();}
 function viewActPhoto(i){const p=ACT_PHOTOS[curActDay][i];if(!p)return;const w=window.open('');w.document.write('<body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="'+p.data+'" style="max-width:100%;max-height:100vh"/></body>');}
 function renderActPhotos(){
   const el=document.getElementById('act-photos');if(!el)return;
   const ph=ACT_PHOTOS[curActDay]||[];
   el.innerHTML=ph.length?ph.map((p,i)=>`<div class="photo-thumb"><img src="${p.data}" onclick="viewActPhoto(${i})" title="${p.name||''}"/><button class="photo-del" onclick="removeActPhoto(${i})">×</button></div>`).join(''):
-  '<div style="font-size:14px;color:#999">Aucune photo pour ce jour.</div>';
+  '<div style="font-size:14px;color:#999">No photos for this day.</div>';
 }
 
 // ── CHART ─────────────────────────────────────────────────────────────────────
@@ -1507,7 +1507,7 @@ function buildDailyReport(di){
     if(dayProdPct(e,d)!==null)prodLogged++;
     const pp=dayProtoPct(e,d);if(pp!==null)protoVals.push(pp);
     (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteEntries.push({emp:e.name,st:e.st,label:lbl,qty:v});});
-    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incidents.push({emp:e.name,st:e.st,text:d.remarks||'(photo jointe sans texte)',key:e.id+'_'+di,photos:REM_PHOTOS[e.id+'_'+di]||[]});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incidents.push({emp:e.name,st:e.st,text:d.remarks||'(photo attached, no text)',key:e.id+'_'+di,photos:REM_PHOTOS[e.id+'_'+di]||[]});
   });
   const protoAvg=protoVals.length?Math.round(protoVals.reduce((a,v)=>a+v,0)/protoVals.length):null;
   const dels=DEL[di]?.deliveries||[];
@@ -1531,39 +1531,39 @@ function buildDailyReport(di){
   return `
   <div class="rep-card" style="border-left:4px solid #8B6220">
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:baseline">
-      <div><div style="font-size:18px;font-weight:bold">Rapport journalier — ${w.full}</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · Semaine du 25–31 mai 2026</div></div>
-      <div style="font-size:13px;color:#888">Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+      <div><div style="font-size:18px;font-weight:bold">Daily Report — ${w.full}</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · Week of May 25–31, 2026</div></div>
+      <div style="font-size:13px;color:#888">Generated ${new Date().toLocaleDateString('en-US')}</div>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px">
-    ${kpi(working.length,'Staff présent','#8B6220')}
-    ${kpi(prodLogged+'/'+working.length,'Production saisie',prodLogged===working.length?'#27AE60':'#E67E22')}
-    ${kpi(protoAvg===null?'—':protoAvg+'%','Protocole moyen',protoAvg===null?'#BBB':sc(protoAvg))}
-    ${kpi(wasteEntries.length,'Entrées gaspillage',wasteEntries.length?'#E74C3C':'#27AE60')}
+    ${kpi(working.length,'Staff on shift','#8B6220')}
+    ${kpi(prodLogged+'/'+working.length,'Production logged',prodLogged===working.length?'#27AE60':'#E67E22')}
+    ${kpi(protoAvg===null?'—':protoAvg+'%','Avg protocol',protoAvg===null?'#BBB':sc(protoAvg))}
+    ${kpi(wasteEntries.length,'Waste entries',wasteEntries.length?'#E74C3C':'#27AE60')}
     ${kpi(incidents.length,'Incidents',incidents.length?'#E74C3C':'#27AE60')}
-    ${kpi(dels.length?delOk+'/'+dels.length:'—','Livraisons OK',dels.length?(delOk===dels.length?'#27AE60':'#E67E22'):'#BBB')}
-    ${kpi(invAlerts.length,'Alertes stock',invAlerts.length?'#E67E22':'#27AE60')}
-    ${kpi(frDone+'/'+FRIDGE_ITEMS.length,'Checks HACCP',frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22')}
+    ${kpi(dels.length?delOk+'/'+dels.length:'—','Deliveries OK',dels.length?(delOk===dels.length?'#27AE60':'#E67E22'):'#BBB')}
+    ${kpi(invAlerts.length,'Stock alerts',invAlerts.length?'#E67E22':'#27AE60')}
+    ${kpi(frDone+'/'+FRIDGE_ITEMS.length,'HACCP checks',frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22')}
   </div>
-  <div class="rep-card"><div class="rep-title">👥 Production & protocole par employé</div>
-    ${working.length?`<div style="overflow-x:auto"><table class="rep-table"><tr><th>Station</th><th>Employé</th><th style="text-align:center">Items saisis</th><th style="text-align:center">Production</th><th style="text-align:center">Protocole</th></tr>${stRows}</table></div>`:'<div style="font-size:14px;color:#999">Personne ne travaille ce jour.</div>'}
+  <div class="rep-card"><div class="rep-title">👥 Production & Protocol by Employee</div>
+    ${working.length?`<div style="overflow-x:auto"><table class="rep-table"><tr><th>Station</th><th>Employee</th><th style="text-align:center">Items logged</th><th style="text-align:center">Production</th><th style="text-align:center">Protocol</th></tr>${stRows}</table></div>`:'<div style="font-size:14px;color:#999">No one is scheduled this day.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">🗑️ Gaspillage / restes</div>
-    ${wasteEntries.length?`<table class="rep-table"><tr><th>Employé</th><th>Item</th><th style="text-align:center">Quantité</th></tr>${wasteEntries.map(x=>`<tr><td>${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span></td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucun gaspillage enregistré.</div>'}
+  <div class="rep-card"><div class="rep-title">🗑️ Waste / Leftovers</div>
+    ${wasteEntries.length?`<table class="rep-table"><tr><th>Employee</th><th>Item</th><th style="text-align:center">Qty</th></tr>${wasteEntries.map(x=>`<tr><td>${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span></td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No waste recorded.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">⚠️ Incidents / remarques</div>
-    ${incidents.length?incidents.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.emp}</strong> <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.photos.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.photos.map((p,pi)=>`<img src="${p.data}" style="width:70px;height:70px;object-fit:cover;border-radius:5px;border:1px solid #E8A3A3;cursor:pointer" onclick="viewRemPhoto('${x.key}',${pi})"/>`).join('')}</div>`:''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ Aucun incident.</div>'}
+  <div class="rep-card"><div class="rep-title">⚠️ Incidents / Remarks</div>
+    ${incidents.length?incidents.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.emp}</strong> <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.photos.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.photos.map((p,pi)=>`<img src="${p.data}" style="width:70px;height:70px;object-fit:cover;border-radius:5px;border:1px solid #E8A3A3;cursor:pointer" onclick="viewRemPhoto('${x.key}',${pi})"/>`).join('')}</div>`:''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ No incidents.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">🚚 Livraisons (Olivier)</div>
-    ${dels.length?dels.map((d,i)=>`<div style="padding:6px 9px;border:1px solid #EEE;border-radius:5px;margin-bottom:5px;font-size:14px;background:${d.onTime&&d.correct?'#F0FAF4':'#FFF8F0'}">#${i+1} · Créneau: ${d.window||'—'} · ${d.onTime===true?'✓ À l\'heure':d.onTime===false?'✗ En retard':'—'} · ${d.correct===true?'✓ Conforme':d.correct===false?'✗ Problème':'—'} · Lieu: ${d.location||'—'}${d.notes?'<br><span style="color:#666">'+d.notes+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#999">Aucune livraison enregistrée.</div>'}
+  <div class="rep-card"><div class="rep-title">🚚 Deliveries (Olivier)</div>
+    ${dels.length?dels.map((d,i)=>`<div style="padding:6px 9px;border:1px solid #EEE;border-radius:5px;margin-bottom:5px;font-size:14px;background:${d.onTime&&d.correct?'#F0FAF4':'#FFF8F0'}">#${i+1} · Window: ${d.window||'—'} · ${d.onTime===true?'✓ On time':d.onTime===false?'✗ Late':'—'} · ${d.correct===true?'✓ Correct':d.correct===false?'✗ Issue':'—'} · Location: ${d.location||'—'}${d.notes?'<br><span style="color:#666">'+d.notes+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#999">No deliveries recorded.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">📦 Inventaire — alertes stock</div>
-    ${invAlerts.length?`<table class="rep-table"><tr><th>Produit</th><th>Lieu</th><th style="text-align:center">Par</th><th style="text-align:center">En stock</th><th style="text-align:center">Statut</th></tr>${invAlerts.map(x=>`<tr><td>${x.n}</td><td>${x.loc}</td><td style="text-align:center">${x.par}</td><td style="text-align:center">${x.qty||'—'}</td><td style="text-align:center;font-weight:bold;color:${x.status==='out'?'#E74C3C':'#E67E22'}">${x.status==='out'?'✗ Rupture':'⚠ Bas'}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucune alerte stock.</div>'}
+  <div class="rep-card"><div class="rep-title">📦 Inventory — Stock Alerts</div>
+    ${invAlerts.length?`<table class="rep-table"><tr><th>Product</th><th>Location</th><th style="text-align:center">Par</th><th style="text-align:center">In stock</th><th style="text-align:center">Status</th></tr>${invAlerts.map(x=>`<tr><td>${x.n}</td><td>${x.loc}</td><td style="text-align:center">${x.par}</td><td style="text-align:center">${x.qty||'—'}</td><td style="text-align:center;font-weight:bold;color:${x.status==='out'?'#E74C3C':'#E67E22'}">${x.status==='out'?'✗ Out':'⚠ Low'}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No stock alerts.</div>'}
   </div>
   <div class="rep-card"><div class="rep-title">✅ Actions & HACCP</div>
-    <div style="font-size:14px;margin-bottom:5px">Checks frigo / HACCP : <strong style="color:${frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22'}">${frDone}/${FRIDGE_ITEMS.length}</strong> · Actions personnalisées : <strong>${custDone}/${cust.length}</strong></div>
-    ${cust.filter(c=>!c.done).length?'<div style="font-size:13px;color:#E67E22">À faire : '+cust.filter(c=>!c.done).map(c=>c.text).join(' · ')+'</div>':''}
-    ${ACT_NOTES[di]?`<div style="margin-top:7px;padding:7px 9px;background:#FDF9F3;border-radius:5px;font-size:14px"><strong>Notes :</strong> ${ACT_NOTES[di]}</div>`:''}
+    <div style="font-size:14px;margin-bottom:5px">Fridge / HACCP checks: <strong style="color:${frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22'}">${frDone}/${FRIDGE_ITEMS.length}</strong> · Custom actions: <strong>${custDone}/${cust.length}</strong></div>
+    ${cust.filter(c=>!c.done).length?'<div style="font-size:13px;color:#E67E22">To do: '+cust.filter(c=>!c.done).map(c=>c.text).join(' · ')+'</div>':''}
+    ${ACT_NOTES[di]?`<div style="margin-top:7px;padding:7px 9px;background:#FDF9F3;border-radius:5px;font-size:14px"><strong>Notes:</strong> ${ACT_NOTES[di]}</div>`:''}
     ${photos.length?`<div style="margin-top:8px"><div style="font-size:13px;color:#888;margin-bottom:5px">📷 ${photos.length} photo(s)</div><div style="display:flex;gap:6px;flex-wrap:wrap">${photos.map((p,i)=>`<img src="${p.data}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #E8E4DC;cursor:pointer" onclick="curActDay=${di};viewActPhoto(${i})"/>`).join('')}</div></div>`:''}
   </div>`;
 }
@@ -1575,7 +1575,7 @@ function buildWeeklyReport(){
   let wasteAll=[],incAll=[];
   emps.forEach(e=>{(SD[e.id]||[]).forEach((d,di)=>{
     (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteAll.push({day:WEEK[di].short,emp:e.name,label:lbl,qty:v});});
-    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push({day:WEEK[di].short,emp:e.name,st:e.st,text:d.remarks||'(photo jointe sans texte)',nph:(REM_PHOTOS[e.id+'_'+di]||[]).length});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push({day:WEEK[di].short,emp:e.name,st:e.st,text:d.remarks||'(photo attached, no text)',nph:(REM_PHOTOS[e.id+'_'+di]||[]).length});
   });});
   let delAll=[];WEEK.forEach((w,di)=>{(DEL[di]?.deliveries||[]).forEach(d=>delAll.push({day:w.short,...d}));});
   const delOk=delAll.filter(d=>d.onTime===true&&d.correct===true).length;
@@ -1586,55 +1586,55 @@ function buildWeeklyReport(){
   return `
   <div class="rep-card" style="border-left:4px solid #8B6220">
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:baseline">
-      <div><div style="font-size:18px;font-weight:bold">Rapport hebdomadaire — Semaine du 25–31 mai 2026</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · ${emps.length} employés</div></div>
-      <div style="font-size:13px;color:#888">Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+      <div><div style="font-size:18px;font-weight:bold">Weekly Report — Week of May 25–31, 2026</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · ${emps.length} employees</div></div>
+      <div style="font-size:13px;color:#888">Generated ${new Date().toLocaleDateString('en-US')}</div>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin-bottom:10px">
-    ${kpi(avg+'%','Score moyen équipe',sc(avg))}
+    ${kpi(avg+'%','Team avg score',sc(avg))}
     ${kpi(sorted[0]?sorted[0].e.name.split(',')[0]:'—','Top performer','#27AE60')}
-    ${kpi(scored.filter(x=>x.ov<55).length,'Sous 55%',scored.filter(x=>x.ov<55).length?'#E74C3C':'#27AE60')}
+    ${kpi(scored.filter(x=>x.ov<55).length,'Below 55%',scored.filter(x=>x.ov<55).length?'#E74C3C':'#27AE60')}
     ${kpi(incAll.length,'Incidents',incAll.length?'#E74C3C':'#27AE60')}
-    ${kpi(wasteAll.length,'Entrées gaspillage',wasteAll.length?'#E67E22':'#27AE60')}
-    ${kpi(delAll.length?delOk+'/'+delAll.length:'—','Livraisons OK',delAll.length?(delOk===delAll.length?'#27AE60':'#E67E22'):'#BBB')}
-    ${kpi(frTot+'/'+FRIDGE_ITEMS.length*7,'Checks HACCP',frTot===FRIDGE_ITEMS.length*7?'#27AE60':'#E67E22')}
+    ${kpi(wasteAll.length,'Waste entries',wasteAll.length?'#E67E22':'#27AE60')}
+    ${kpi(delAll.length?delOk+'/'+delAll.length:'—','Deliveries OK',delAll.length?(delOk===delAll.length?'#27AE60':'#E67E22'):'#BBB')}
+    ${kpi(frTot+'/'+FRIDGE_ITEMS.length*7,'HACCP checks',frTot===FRIDGE_ITEMS.length*7?'#27AE60':'#E67E22')}
     ${kpi(photosTot,'Photos','#8B6220')}
   </div>
-  <div class="rep-card"><div class="rep-title">📊 Scores par station</div>
+  <div class="rep-card"><div class="rep-title">📊 Scores by Station</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px">
-    ${Object.entries(ST).map(([n,cfg])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return '';const a=Math.round(t.reduce((acc,x)=>acc+x.ov,0)/t.length);return `<div style="padding:8px;border:1px solid #E8E4DC;border-left:4px solid ${cfg.color};border-radius:6px"><div style="font-size:12px;color:${cfg.color};font-weight:bold;text-transform:uppercase">${n}</div><div style="font-size:18px;font-weight:bold;color:${sc(a)}">${a}%</div><div style="font-size:12px;color:#888">${t.length} employé(s)</div></div>`;}).join('')}
+    ${Object.entries(ST).map(([n,cfg])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return '';const a=Math.round(t.reduce((acc,x)=>acc+x.ov,0)/t.length);return `<div style="padding:8px;border:1px solid #E8E4DC;border-left:4px solid ${cfg.color};border-radius:6px"><div style="font-size:12px;color:${cfg.color};font-weight:bold;text-transform:uppercase">${n}</div><div style="font-size:18px;font-weight:bold;color:${sc(a)}">${a}%</div><div style="font-size:12px;color:#888">${t.length} employee(s)</div></div>`;}).join('')}
     </div>
   </div>
-  <div class="rep-card"><div class="rep-title">👥 Détail par employé</div>
+  <div class="rep-card"><div class="rep-title">👥 Employee Details</div>
     <div style="overflow-x:auto"><table class="rep-table">
-      <tr><th>#</th><th>Employé</th><th>Station</th><th style="text-align:center">Jours</th><th style="text-align:center">Protocole</th><th style="text-align:center">Production</th><th style="text-align:center">Score global</th></tr>
+      <tr><th>#</th><th>Employee</th><th>Station</th><th style="text-align:center">Days</th><th style="text-align:center">Protocol</th><th style="text-align:center">Production</th><th style="text-align:center">Overall</th></tr>
       ${sorted.map((x,i)=>`<tr><td style="color:#999">${i+1}</td><td style="font-weight:bold">${x.e.name}</td><td style="color:${ST[x.e.st]?.color||'#666'}">${x.e.st}</td><td style="text-align:center">${x.days}</td><td style="text-align:center;color:${sc(x.pt)}">${x.pt}%</td><td style="text-align:center;color:${sc(x.pr)}">${x.pr}%</td><td style="text-align:center;font-weight:bold;color:${sc(x.ov)}">${x.ov}%</td></tr>`).join('')}
     </table></div>
   </div>
-  <div class="rep-card"><div class="rep-title">⚠️ Incidents de la semaine</div>
-    ${incAll.length?incAll.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.day}</strong> · ${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.nph?' <span style="color:#8B6220;font-weight:bold">📷 '+x.nph+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ Aucun incident cette semaine.</div>'}
+  <div class="rep-card"><div class="rep-title">⚠️ Incidents This Week</div>
+    ${incAll.length?incAll.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.day}</strong> · ${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.nph?' <span style="color:#8B6220;font-weight:bold">📷 '+x.nph+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ No incidents this week.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">🗑️ Gaspillage de la semaine</div>
-    ${wasteAll.length?`<table class="rep-table"><tr><th>Jour</th><th>Employé</th><th>Item</th><th style="text-align:center">Qté</th></tr>${wasteAll.map(x=>`<tr><td>${x.day}</td><td>${x.emp}</td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucun gaspillage enregistré.</div>'}
+  <div class="rep-card"><div class="rep-title">🗑️ Waste This Week</div>
+    ${wasteAll.length?`<table class="rep-table"><tr><th>Day</th><th>Employee</th><th>Item</th><th style="text-align:center">Qty</th></tr>${wasteAll.map(x=>`<tr><td>${x.day}</td><td>${x.emp}</td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No waste recorded.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">🚚 Livraisons de la semaine</div>
-    ${delAll.length?`<table class="rep-table"><tr><th>Jour</th><th>Créneau</th><th style="text-align:center">À l'heure</th><th style="text-align:center">Conforme</th><th>Lieu</th><th>Notes</th></tr>${delAll.map(d=>`<tr><td>${d.day}</td><td>${d.window||'—'}</td><td style="text-align:center">${d.onTime===true?'✓':d.onTime===false?'✗':'—'}</td><td style="text-align:center">${d.correct===true?'✓':d.correct===false?'✗':'—'}</td><td>${d.location||'—'}</td><td style="font-size:12px;color:#666">${d.notes||''}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#999">Aucune livraison enregistrée.</div>'}
+  <div class="rep-card"><div class="rep-title">🚚 Deliveries This Week</div>
+    ${delAll.length?`<table class="rep-table"><tr><th>Day</th><th>Window</th><th style="text-align:center">On time</th><th style="text-align:center">Correct</th><th>Location</th><th>Notes</th></tr>${delAll.map(d=>`<tr><td>${d.day}</td><td>${d.window||'—'}</td><td style="text-align:center">${d.onTime===true?'✓':d.onTime===false?'✗':'—'}</td><td style="text-align:center">${d.correct===true?'✓':d.correct===false?'✗':'—'}</td><td>${d.location||'—'}</td><td style="font-size:12px;color:#666">${d.notes||''}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#999">No deliveries recorded.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">📦 Produits signalés (bas / rupture)</div>
-    ${Object.keys(invFlag).length?`<table class="rep-table"><tr><th>Produit</th><th>Jours concernés</th></tr>${Object.entries(invFlag).map(([id,flags])=>{const it=INV_ITEMS.find(x=>x.id===id);return it?`<tr><td>${it.n} <span style="color:#999;font-size:12px">(${it.loc})</span></td><td>${flags.map(f=>`<span style="color:${f.status==='out'?'#E74C3C':'#E67E22'};font-weight:bold">${f.day}${f.status==='out'?' ✗':' ⚠'}</span>`).join(' · ')}</td></tr>`:'';}).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucun produit signalé.</div>'}
+  <div class="rep-card"><div class="rep-title">📦 Flagged Products (low / out)</div>
+    ${Object.keys(invFlag).length?`<table class="rep-table"><tr><th>Product</th><th>Days flagged</th></tr>${Object.entries(invFlag).map(([id,flags])=>{const it=INV_ITEMS.find(x=>x.id===id);return it?`<tr><td>${it.n} <span style="color:#999;font-size:12px">(${it.loc})</span></td><td>${flags.map(f=>`<span style="color:${f.status==='out'?'#E74C3C':'#E67E22'};font-weight:bold">${f.day}${f.status==='out'?' ✗':' ⚠'}</span>`).join(' · ')}</td></tr>`:'';}).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No flagged products.</div>'}
   </div>
-  <div class="rep-card"><div class="rep-title">📝 Notes journalières</div>
-    ${WEEK.map((w,di)=>ACT_NOTES[di]?`<div style="margin-bottom:5px;font-size:14px"><strong>${w.short}</strong> — ${ACT_NOTES[di]}</div>`:'').join('')||'<div style="font-size:14px;color:#999">Aucune note cette semaine.</div>'}
+  <div class="rep-card"><div class="rep-title">📝 Daily Notes</div>
+    ${WEEK.map((w,di)=>ACT_NOTES[di]?`<div style="margin-bottom:5px;font-size:14px"><strong>${w.short}</strong> — ${ACT_NOTES[di]}</div>`:'').join('')||'<div style="font-size:14px;color:#999">No notes this week.</div>'}
   </div>`;
 }
 
 // ── EMAIL DU RAPPORT ──────────────────────────────────────────────────────────
 let REPORT_EMAIL=load('REPORT_EMAIL','');
 function changeReportEmail(){
-  const v=prompt('Adresse email du destinataire du rapport :',REPORT_EMAIL||'');
+  const v=prompt('Report recipient email address:',REPORT_EMAIL||'');
   if(v===null)return;
   REPORT_EMAIL=v.trim();save('REPORT_EMAIL',REPORT_EMAIL);
-  if(REPORT_EMAIL)alert('Destinataire enregistré : '+REPORT_EMAIL);
+  if(REPORT_EMAIL)alert('Recipient saved: '+REPORT_EMAIL);
 }
 function buildDailyEmailText(di){
   const w=WEEK[di];const L=[];
@@ -1644,26 +1644,26 @@ function buildDailyEmailText(di){
     if(dayProdPct(e,d)!==null)prodLogged++;
     const pp=dayProtoPct(e,d);if(pp!==null)protoVals.push(pp);
     (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteE.push(e.name.split(',')[0]+': '+lbl+' = '+v);});
-    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incs.push(e.name+' ('+e.st+') — '+(d.remarks||'photo jointe')+((REM_PHOTOS[e.id+'_'+di]||[]).length?' [+'+(REM_PHOTOS[e.id+'_'+di]||[]).length+' photo(s)]':''));
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incs.push(e.name+' ('+e.st+') — '+(d.remarks||'photo attached')+((REM_PHOTOS[e.id+'_'+di]||[]).length?' [+'+(REM_PHOTOS[e.id+'_'+di]||[]).length+' photo(s)]':''));
   });
   const protoAvg=protoVals.length?Math.round(protoVals.reduce((a,v)=>a+v,0)/protoVals.length):null;
   const dels=DEL[di]?.deliveries||[];const delOk=dels.filter(d=>d.onTime===true&&d.correct===true).length;
-  const invA=[];Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){const it=INV_ITEMS.find(x=>x.id===id);if(it)invA.push(it.n+' ('+it.loc+') : '+(d.status==='out'?'RUPTURE':'bas'));}});
+  const invA=[];Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){const it=INV_ITEMS.find(x=>x.id===id);if(it)invA.push(it.n+' ('+it.loc+') : '+(d.status==='out'?'OUT OF STOCK':'low'));}});
   const fr=ACT_FRIDGE[di]||{};const frDone=FRIDGE_ITEMS.filter(f=>fr[f.id]).length;
   const nPh=(ACT_PHOTOS[di]||[]).length;
-  L.push('LAPIS BOH — RAPPORT JOURNALIER');L.push(w.full+' · Semaine du 25-31 mai 2026');L.push('');
-  L.push('— RESUME —');
-  L.push('Staff present : '+working.length);
-  L.push('Production saisie : '+prodLogged+'/'+working.length);
-  L.push('Protocole moyen : '+(protoAvg===null?'—':protoAvg+'%'));
-  L.push('Checks HACCP : '+frDone+'/'+FRIDGE_ITEMS.length);
-  L.push('Livraisons OK : '+(dels.length?delOk+'/'+dels.length:'aucune'));
+  L.push('LAPIS BOH — DAILY REPORT');L.push(w.full+' · Week of May 25-31, 2026');L.push('');
+  L.push('— SUMMARY —');
+  L.push('Staff on shift: '+working.length);
+  L.push('Production logged: '+prodLogged+'/'+working.length);
+  L.push('Avg protocol: '+(protoAvg===null?'—':protoAvg+'%'));
+  L.push('HACCP checks: '+frDone+'/'+FRIDGE_ITEMS.length);
+  L.push('Deliveries OK: '+(dels.length?delOk+'/'+dels.length:'none'));
   L.push('');
-  L.push('— INCIDENTS ('+incs.length+') —');incs.length?incs.forEach(x=>L.push('• '+x)):L.push('Aucun');L.push('');
-  L.push('— GASPILLAGE ('+wasteE.length+') —');wasteE.length?wasteE.forEach(x=>L.push('• '+x)):L.push('Aucun');L.push('');
-  L.push('— ALERTES STOCK ('+invA.length+') —');invA.length?invA.forEach(x=>L.push('• '+x)):L.push('Aucune');L.push('');
+  L.push('— INCIDENTS ('+incs.length+') —');incs.length?incs.forEach(x=>L.push('• '+x)):L.push('None');L.push('');
+  L.push('— WASTE ('+wasteE.length+') —');wasteE.length?wasteE.forEach(x=>L.push('• '+x)):L.push('None');L.push('');
+  L.push('— STOCK ALERTS ('+invA.length+') —');invA.length?invA.forEach(x=>L.push('• '+x)):L.push('None');L.push('');
   if(ACT_NOTES[di])L.push('— NOTES —\n'+ACT_NOTES[di]+'\n');
-  if(nPh)L.push('('+nPh+' photo(s) du jour : voir l\'application)');
+  if(nPh)L.push('('+nPh+' photo(s) today: see the app)');
   return L.join('\n');
 }
 function buildWeeklyEmailText(){
@@ -1675,31 +1675,31 @@ function buildWeeklyEmailText(){
   let incAll=[],wasteN=0;
   emps.forEach(e=>{(SD[e.id]||[]).forEach((d,di)=>{
     (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteN++;});
-    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push(WEEK[di].short+' · '+e.name+' — '+(d.remarks||'photo jointe'));
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push(WEEK[di].short+' · '+e.name+' — '+(d.remarks||'photo attached'));
   });});
   let delAll=[],delOk=0;WEEK.forEach((w,di)=>{(DEL[di]?.deliveries||[]).forEach(d=>{delAll.push(d);if(d.onTime===true&&d.correct===true)delOk++;});});
-  L.push('LAPIS BOH — RAPPORT HEBDOMADAIRE');L.push('Semaine du 25-31 mai 2026 · '+emps.length+' employes');L.push('');
-  L.push('— RESUME —');
-  L.push('Score moyen equipe : '+avg+'%');
-  L.push('Top performer : '+(sorted[0]?sorted[0].e.name+' ('+sorted[0].ov+'%)':'—'));
-  L.push('Sous 55% : '+(below.length?below.map(x=>x.e.name.split(',')[0]+' ('+x.ov+'%)').join(', '):'aucun'));
-  L.push('Incidents : '+incAll.length+' · Gaspillage : '+wasteN+' entrees · Livraisons OK : '+(delAll.length?delOk+'/'+delAll.length:'aucune'));
+  L.push('LAPIS BOH — WEEKLY REPORT');L.push('Week of May 25-31, 2026 · '+emps.length+' employees');L.push('');
+  L.push('— SUMMARY —');
+  L.push('Team avg score: '+avg+'%');
+  L.push('Top performer: '+(sorted[0]?sorted[0].e.name+' ('+sorted[0].ov+'%)':'—'));
+  L.push('Below 55%: '+(below.length?below.map(x=>x.e.name.split(',')[0]+' ('+x.ov+'%)').join(', '):'none'));
+  L.push('Incidents: '+incAll.length+' · Waste: '+wasteN+' entries · Deliveries OK: '+(delAll.length?delOk+'/'+delAll.length:'none'));
   L.push('');
-  L.push('— SCORES PAR STATION —');
-  Object.entries(ST).forEach(([n])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return;L.push('• '+n+' : '+Math.round(t.reduce((a,x)=>a+x.ov,0)/t.length)+'% ('+t.length+' pers.)');});
+  L.push('— SCORES BY STATION —');
+  Object.entries(ST).forEach(([n])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return;L.push('• '+n+' : '+Math.round(t.reduce((a,x)=>a+x.ov,0)/t.length)+'% ('+t.length+' staff)');});
   L.push('');
   L.push('— TOP 5 —');sorted.slice(0,5).forEach((x,i)=>L.push((i+1)+'. '+x.e.name+' : '+x.ov+'%'));L.push('');
-  L.push('— INCIDENTS ('+incAll.length+') —');incAll.length?incAll.slice(0,15).forEach(x=>L.push('• '+x)):L.push('Aucun');
-  if(incAll.length>15)L.push('… +'+(incAll.length-15)+' autres (voir l\'application)');
+  L.push('— INCIDENTS ('+incAll.length+') —');incAll.length?incAll.slice(0,15).forEach(x=>L.push('• '+x)):L.push('None');
+  if(incAll.length>15)L.push('… +'+(incAll.length-15)+' more (see the app)');
   return L.join('\n');
 }
 function sendReportEmail(){
   if(!REPORT_EMAIL){changeReportEmail();if(!REPORT_EMAIL)return;}
   const isDaily=curRepMode==='daily';
-  const subject='Lapis BOH — Rapport '+(isDaily?'journalier · '+WEEK[curRepDay].full:'hebdomadaire · Semaine du 25-31 mai 2026');
+  const subject='Lapis BOH — '+(isDaily?'Daily report · '+WEEK[curRepDay].full:'Weekly report · Week of May 25-31, 2026');
   let body=isDaily?buildDailyEmailText(curRepDay):buildWeeklyEmailText();
-  body+='\n\n---\nRapport genere par Lapis Kitchen OS le '+new Date().toLocaleDateString('fr-FR')+'.\nPour la version complete avec photos : ouvrir l\'application > Report > Imprimer/PDF.';
-  if(body.length>1800)body=body.slice(0,1750)+'\n… (rapport tronque — version complete dans l\'application)';
+  body+='\n\n---\nReport generated by Lapis Kitchen OS on '+new Date().toLocaleDateString('en-US')+'.\nFor the full version with photos: open the app > Report > Print/PDF.';
+  if(body.length>1800)body=body.slice(0,1750)+'\n… (report truncated — full version in the app)';
   window.location.href='mailto:'+encodeURIComponent(REPORT_EMAIL)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
 }
 
