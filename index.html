@@ -76,6 +76,25 @@ textarea.field{resize:vertical;line-height:1.5}
 .sec-toggle.open .arr{transform:rotate(90deg);}
 .sec-body{overflow:hidden;transition:max-height .35s ease,opacity .25s ease;max-height:0;opacity:0;pointer-events:none;}
 .sec-body.open{max-height:9999px;opacity:1;pointer-events:auto;}
+.photo-thumb{position:relative;width:92px;height:92px;border-radius:7px;overflow:hidden;border:1px solid #E8E4DC;background:#FAFAF8}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.photo-del{position:absolute;top:3px;right:3px;background:rgba(231,76,60,.92);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-add-btn{display:inline-flex;align-items:center;gap:6px;background:#8B6220;color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:15px;cursor:pointer}
+.rep-card{background:#fff;border:1px solid #E8E4DC;border-radius:8px;padding:13px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.rep-title{font-size:15px;font-weight:bold;color:#8B6220;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;border-bottom:2px solid #F0EDE6;padding-bottom:5px}
+.rep-table{width:100%;border-collapse:collapse;font-size:14px}
+.rep-table th{text-align:left;padding:5px 7px;color:#555;font-weight:bold;border-bottom:2px solid #EEE;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.rep-table td{padding:5px 7px;border-bottom:1px solid #F5F5F5;color:#333}
+.rep-kpi{text-align:center;padding:10px 6px;background:#FAFAF8;border:1px solid #E8E4DC;border-radius:7px}
+.rep-kpi .v{font-size:20px;font-weight:bold;line-height:1.1}
+.rep-kpi .l{font-size:11px;color:#666;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+@media print{
+  .nav,.save-badge,#rep-controls,#rep-day-btns{display:none!important}
+  .page{display:none!important}
+  #view-report.active{display:block!important;max-width:100%;padding:0}
+  body{background:#fff}
+  .rep-card{box-shadow:none;break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -91,6 +110,7 @@ textarea.field{resize:vertical;line-height:1.5}
     <button class="nbtn" onclick="showView('inventory')">Inventory</button>
     <button class="nbtn" onclick="showView('actions')">Actions</button>
     <button class="nbtn" onclick="showView('chart')">Chart</button>
+    <button class="nbtn" onclick="showView('report')">Report</button>
     <button class="nbtn" onclick="showView('add')" style="background:#8B6220;color:#fff;border-color:#8B6220">+ Add</button>
   </div>
 </div>
@@ -184,7 +204,15 @@ textarea.field{resize:vertical;line-height:1.5}
       <button onclick="addCustomAction()" style="background:#8B6220;border:none;border-radius:6px;padding:7px 12px;color:#fff;font-size:17px;white-space:nowrap">+ Add</button>
     </div>
   </div>
-  <div class="card"><div class="stitle" style="margin-top:0">📝 Notes</div><textarea class="field" id="act-notes" rows="3" placeholder="General notes for this day..." oninput="saveActNotes()"></textarea></div>
+  <div class="card"><div class="stitle" style="margin-top:0">📝 Notes & Photos</div>
+    <textarea class="field" id="act-notes" rows="3" placeholder="General notes for this day..." oninput="saveActNotes()"></textarea>
+    <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+      <label class="photo-add-btn" for="act-photo-input">📷 Ajouter des photos</label>
+      <input type="file" id="act-photo-input" accept="image/*" multiple style="display:none" onchange="addActPhotos(this.files);this.value=''"/>
+      <span style="font-size:13px;color:#888">Photos stockées sur cet appareil (compressées automatiquement)</span>
+    </div>
+    <div id="act-photos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px"></div>
+  </div>
 </div>
 
 <!-- CHART -->
@@ -206,6 +234,21 @@ textarea.field{resize:vertical;line-height:1.5}
   <div class="card" id="chart-bars" style="margin-bottom:12px"></div>
   <div style="font-size:16px;color:#333;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid #EEE;padding-bottom:4px">Station Averages</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:7px" id="st-avgs"></div>
+</div>
+
+<!-- REPORT -->
+<div id="view-report" class="page" style="max-width:880px">
+  <p class="plabel">Reporting — Lapis BOH</p>
+  <h1 class="ptitle">Rapport d'activités</h1>
+  <div id="rep-controls" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+    <button class="mbtn active" id="rep-daily-btn" onclick="setRepMode('daily')">📅 Journalier</button>
+    <button class="mbtn" id="rep-weekly-btn" onclick="setRepMode('weekly')">🗓️ Hebdomadaire</button>
+    <button class="mbtn" onclick="sendReportEmail()" style="margin-left:auto;background:#2980B9;color:#fff;border-color:#2980B9">📧 Envoyer par email</button>
+    <button class="mbtn" onclick="changeReportEmail()" title="Changer le destinataire" style="background:#fff;color:#2980B9;border-color:#2980B9">✏️</button>
+    <button class="mbtn" onclick="window.print()" style="background:#27AE60;color:#fff;border-color:#27AE60">🖨️ Imprimer / PDF</button>
+  </div>
+  <div id="rep-day-btns" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px"></div>
+  <div id="report-content"></div>
 </div>
 
 <!-- ADD -->
@@ -579,51 +622,51 @@ const PROTO={
     "Food properly cooled before bagging — never bag hot food",
     "Cutting boards and knives sanitized between each protein",
     "Walk-in organized — meat in proper containers, dated, stored correctly",
-    // ── Bolanees (Dalila: Leek + Potato | Maria: Pumpkin | Sayda: Beef — Par 150 each)
+    // ── Bolanees (Dalila: Leek + Potato | Maria: Pumpkin | Sutapa: Beef — Par 150 each)
     "Bolanee Leek prepped — portioned and bagged (Dalila — par 150)",
     "Bolanee Potato prepped — portioned and bagged (Dalila — par 150)",
     "Bolanee Pumpkin prepped — portioned and bagged (Maria — par 150)",
-    "Bolanee Beef prepped — portioned and bagged (Sayda — par 150)",
+    "Bolanee Beef prepped — portioned and bagged (Sutapa — par 150)",
     // ── Dumplings / Sambossa (Mohamed / Maria)
-    "Mantoo Beef prepped (par 1400)",
-    "Mantoo Shrimp prepped (par 1400)",
-    "Aushak Leek prepped (par 1400)",
+    "Mantoo Beef prepped (Mohamed / Maria — par 1400)",
+    "Mantoo Shrimp prepped (Mohamed / Maria — par 1400)",
+    "Aushak Leek prepped (Mohamed / Maria — par 1400)",
     "Sambossa Beef prepped (Mohamed)",
     "Sambossa Shrimp prepped (Mohamed)",
     "Sambossa Spinach prepped (Maria)",
     "Naan prepped (Mohamed)",
     "Pumpkin peeling done (Mohamed / Haroon — every day)",
     // ── Vegetarian Dishes (Liliana / Orbelina)
-    "Sabzi (Spinach) cooked and cooled",
-    "Bamia (Okra) cooked and cooled",
-    "Lubya (Red Kidney Beans) cooked and cooled",
-    "Zardak (Carrots) cooked and cooled",
-    "Gullpee (Cauliflower) cooked and cooled",
-    "Dall (Lentil) cooked and cooled",
-    "Samarok (Mushroom) cooked and cooled",
-    "Shola (Seven Beans) cooked and cooled",
+    "Sabzi (Spinach) cooked and cooled (Liliana / Orbelina)",
+    "Bamia (Okra) cooked and cooled (Liliana / Orbelina)",
+    "Lubya (Red Kidney Beans) cooked and cooled (Liliana / Orbelina)",
+    "Zardak (Carrots) cooked and cooled (Liliana / Orbelina)",
+    "Gullpee (Cauliflower) cooked and cooled (Liliana / Orbelina)",
+    "Dall (Lentil) cooked and cooled (Liliana / Orbelina)",
+    "Samarok (Mushroom) cooked and cooled (Liliana / Orbelina)",
+    "Shola (Seven Beans) cooked and cooled (Liliana / Orbelina)",
     // ── Soups (Liliana / Orbelina)
-    "Aush Soup (Veggi/Meat) cooked and cooled",
-    "Nask Soup cooked and cooled",
-    "Chicken Soup cooked and cooled",
+    "Aush Soup (Veggi/Meat) cooked and cooled (Liliana / Orbelina)",
+    "Nask Soup cooked and cooled (Liliana / Orbelina)",
+    "Chicken Soup cooked and cooled (Liliana / Orbelina)",
     // ── Meat Dishes (Liliana / Orbelina)
-    "Qabuli Palow Lamb cooked and cooled",
-    "Lamb Shank cooked and cooled",
+    "Qabuli Palow Lamb cooked and cooled (Liliana / Orbelina)",
+    "Lamb Shank cooked and cooled (Liliana / Orbelina)",
     "Kofta (Beef Meatballs) prepped (Rodolfo / Orbelina / Carman)",
-    "Chicken Qurma cooked and cooled",
+    "Chicken Qurma cooked and cooled (Liliana / Orbelina)",
     // ── Sauces (Cristian A.)
-    "Quinoa cooked",
-    "Sauce for Eggplant prepped",
-    "Sauce for Pumpkin prepped",
-    "Aushak Beef Sauce prepped",
-    "Mantoo Sauce prepped",
-    "Saffron Sauce prepped",
+    "Quinoa cooked (Cristian)",
+    "Sauce for Eggplant prepped (Cristian)",
+    "Sauce for Pumpkin prepped (Cristian)",
+    "Aushak Beef Sauce prepped (Cristian)",
+    "Mantoo Sauce prepped (Cristian)",
+    "Saffron Sauce prepped (Cristian)",
     "Red Chatnee prepped (Cristian)",
     "Green Chatnee prepped (Bessy)",
-    // ── Kabobs & Prep (Apolee / Haroon / Carman)
-    "Chaplee Kabob prepped (Apolee)",
+    // ── Kabobs & Prep (Anani / Haroon / Carman)
+    "Chaplee Kabob prepped (Anani)",
     "Shamee Kabob (pate) prepped (Carman/Haroon — Tuesdays)",
-    "Cutting meat for kabobs done (Apolee / Haroon)",
+    "Cutting meat for kabobs done (Anani / Haroon)",
     "Shornakhot prepped (Rodolfo)",
     // ── Daily Tasks (Haroon / Bessy / Orbelina)
     "Tomatoes (can blending) done (Bessy)",
@@ -637,9 +680,9 @@ const PROTO={
     "Veggies for soup prepped (Bessy / Orbelina)",
     "Turshi veggies prepped (Carman / Orbelina)",
     // ── Desserts (Ana / Liliana / Orbelina)
-    "Rice Pudding (Sheer Berenj) prepped",
-    "Feerne prepped",
-    "Halwa Semolina prepped",
+    "Rice Pudding (Sheer Berenj) prepped (Liliana / Orbelina / Ana)",
+    "Feerne prepped (Liliana / Orbelina / Ana)",
+    "Halwa Semolina prepped (Liliana / Orbelina / Ana)",
     "Orange Cake prepped (Ana)",
     // ── Closing
     "All dishes labeled with name, date, and quantity",
@@ -927,6 +970,8 @@ emps.forEach(e=>{if(!SD[e.id])SD[e.id]=WEEK.map((_,di)=>makeDay(e,di));WEEK.forE
 let ACT_FRIDGE=load('ACT_FRIDGE3',WEEK.map(()=>Object.fromEntries(FRIDGE_ITEMS.map(f=>[f.id,false]))));
 let ACT_CUSTOM=load('ACT_CUSTOM2',WEEK.map(()=>[]));
 let ACT_NOTES=load('ACT_NOTES2',WEEK.map(()=>""));
+let ACT_PHOTOS=load('ACT_PHOTOS',WEEK.map(()=>[]));
+let REM_PHOTOS=load('REM_PHOTOS',{}); // photos des remarques: clé "empId_jour" 
 let ACTION_TEMPLATES=load('ACTION_TEMPLATES2',[]);
 let DEL=load('DEL2',WEEK.map(()=>({deliveries:[]})));
 
@@ -939,13 +984,35 @@ let INV_DAY=load('INV_DAY',WEEK.map(()=>({})));
 function saveAll(){
   save('emps2',emps);save('SD2',SD);save('curSt2',curSt);save('curDay2',curDay);
   save('curActDay2',curActDay);save('curDelDay2',curDelDay);
-  save('ACT_FRIDGE2',ACT_FRIDGE);save('ACT_CUSTOM2',ACT_CUSTOM);save('ACT_NOTES2',ACT_NOTES);
+  save('ACT_FRIDGE2',ACT_FRIDGE);save('ACT_CUSTOM2',ACT_CUSTOM);save('ACT_NOTES2',ACT_NOTES);save('ACT_PHOTOS',ACT_PHOTOS);save('REM_PHOTOS',REM_PHOTOS);
   save('ACTION_TEMPLATES2',ACTION_TEMPLATES);save('DEL2',DEL);
   save('INV_ITEMS',INV_ITEMS);save('INV_DAY',INV_DAY);
   save('curInvLoc',curInvLoc);save('curInvCat',curInvCat);save('curInvDay',curInvDay);
 
   scheduleSyncToSupabase();
 }
+
+// ── TASK ASSIGNMENT FILTER ────────────────────────────────────────────────────
+// Protocol/production items mentioning a specific name only appear on that person's profile.
+const TASK_NAMES=["Dalila","Maria","Sutapa","Mohamed","Haroon","Liliana","Orbelina","Cristian","Bessy","Anani","Carman","Rodolfo","Ana","Edith","Daniela","Camila"];
+function itemAppliesTo(text,e){
+  const found=TASK_NAMES.filter(n=>new RegExp('\\b'+n+'\\b','i').test(text));
+  if(!found.length)return true;
+  return found.some(n=>new RegExp('\\b'+n+'\\b','i').test(e.name));
+}
+const PROD_ASSIGN={"Prep / AM":{
+  "Bolanee Leek":["Dalila"],"Bolanee Potato":["Dalila"],"Bolanee Pumpkin":["Maria","Camila"],"Bolanee Beef":["Sutapa"],
+  "Mantoo Beef":["Mohamed","Maria"],"Mantoo Shrimp":["Mohamed","Maria"],"Aushak Leek":["Mohamed","Maria"],
+  "Sambossa Beef":["Mohamed"],"Sambossa Shrimp":["Mohamed"],"Sambossa Spinach":["Maria","Camila"],"Naan (prepped)":["Mohamed","Haroon"],
+  "Sabzi (Spinach)":["Liliana","Orbelina"],"Bamia (Okra)":["Liliana","Orbelina"],"Lubya (Red Kidney Beans)":["Liliana","Orbelina"],"Zardak (Carrots)":["Liliana","Orbelina"],"Gullpee (Cauliflower)":["Liliana","Orbelina"],"Dall (Lentil)":["Liliana","Orbelina"],"Samarok (Mushroom)":["Liliana","Orbelina"],"Shola (Seven Beans)":["Liliana","Orbelina"],
+  "Quinoa":["Cristian"],"Sauce for Eggplant":["Cristian"],"Sauce for Pumpkin":["Cristian"],"Aushak Beef Sauce":["Cristian"],"Mantoo Sauce":["Cristian"],"Saffron Sauce":["Cristian"],"Red Chatnee":["Cristian"],"Green Chatnee":["Bessy"],
+  "Aush Soup (Veggi/Meat)":["Liliana","Orbelina"],"Nask Soup":["Liliana","Orbelina"],"Chicken Soup":["Liliana","Orbelina"],
+  "Qabuli Palow Lamb":["Liliana","Orbelina"],"Lamb Shank":["Liliana","Orbelina"],"Kofta (Beef Meatballs)":["Orbelina","Carman"],"Chicken Qurma":["Liliana","Orbelina"],
+  "Chaplee Kabob":["Anani"],"Shamee Kabob (pate)":["Carman","Haroon"],
+  "Rice Pudding (Sheer Berenj)":["Liliana","Orbelina","Ana"],"Feerne":["Liliana","Orbelina","Ana"],"Halwa Semolina":["Liliana","Orbelina","Ana"],"Orange Cake":["Ana"],
+  "Pumpkin Peeling":["Mohamed","Haroon"],"Eggplant Cutting":["Carman"],"Garlic Prep":["Haroon"],"Ginger Prep":["Haroon"],"Tomatoes (can blending)":["Bessy"],"Dill Chop":["Bessy"],"Mushroom Cut":["Bessy"],"Veggies for Soup":["Bessy","Orbelina"],"Cutting Meat for Kabobs":["Anani","Haroon"],"Turshi Veggies":["Carman","Orbelina"],
+}};
+function prodAppliesTo(st,label,e){const m=PROD_ASSIGN[st];if(!m||!m[label])return true;return m[label].some(n=>new RegExp('\\b'+n+'\\b','i').test(e.name));}
 
 // ── SCORES ────────────────────────────────────────────────────────────────────
 function empProt(id){
@@ -954,7 +1021,8 @@ function empProt(id){
   const w=SD[id]?.filter(d=>d.working)||[];if(!w.length)return 0;
   let totalDone=0,totalApplicable=0;
   w.forEach(d=>{
-    p.forEach((_,i)=>{
+    p.forEach((txt,i)=>{
+      if(!itemAppliesTo(txt,e))return; // skip tasks assigned to someone else
       const v=(d.protocol||[])[i];
       if(v==='na')return; // skip N/A items
       totalApplicable++;
@@ -963,7 +1031,7 @@ function empProt(id){
   });
   return totalApplicable>0?Math.round((totalDone/totalApplicable)*100):0;
 }
-function empProd(id){const e=emps.find(x=>x.id===id);if(!e)return 0;const items=PROD_ITEMS[e.st]||[];if(!items.length)return 0;const w=SD[id]?.filter(d=>d.working&&d.prodItems&&d.prodItems.some(v=>v!==null&&v!=="na"))||[];if(!w.length)return 0;const scores=w.map(d=>{const ent=items.map((item,i)=>d.prodItems[i]!==null&&d.prodItems[i]!=="na"?Math.min((Number(d.prodItems[i])/item.target)*100,150):null).filter(v=>v!==null);return ent.length?ent.reduce((a,s)=>a+s,0)/ent.length:0;});return Math.min(Math.round(scores.reduce((a,s)=>a+s,0)/scores.length),150);}
+function empProd(id){const e=emps.find(x=>x.id===id);if(!e)return 0;const items=PROD_ITEMS[e.st]||[];if(!items.length)return 0;const w=SD[id]?.filter(d=>d.working&&d.prodItems&&d.prodItems.some(v=>v!==null&&v!=="na"))||[];if(!w.length)return 0;const scores=w.map(d=>{const ent=items.map((item,i)=>prodAppliesTo(e.st,item.label,e)&&d.prodItems[i]!==null&&d.prodItems[i]!=="na"?Math.min((Number(d.prodItems[i])/item.target)*100,150):null).filter(v=>v!==null);return ent.length?ent.reduce((a,s)=>a+s,0)/ent.length:0;});return Math.min(Math.round(scores.reduce((a,s)=>a+s,0)/scores.length),150);}
 function empOverall(id){
   const e=emps.find(x=>x.id===id);if(!e)return 0;
   const prot=empProt(id);
@@ -982,7 +1050,7 @@ function showView(v){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
-  const m={staff:'Staff',schedule:'Schedule',stations:'Stations',delivery:'Delivery',inventory:'Inventory',actions:'Actions',chart:'Chart',add:'+ Add',profile:'Stations'};
+  const m={staff:'Staff',schedule:'Schedule',stations:'Stations',delivery:'Delivery',inventory:'Inventory',actions:'Actions',chart:'Chart',report:'Report',add:'+ Add',profile:'Stations'};
   document.querySelectorAll('.nbtn').forEach(b=>{if(b.textContent.trim()===m[v])b.classList.add('active');});
   if(v==='staff')renderStaff();
   if(v==='schedule')renderSchedule();
@@ -991,6 +1059,7 @@ function showView(v){
   if(v==='inventory')renderInventory();
   if(v==='actions')renderActions();
   if(v==='chart')renderChart();
+  if(v==='report')renderReport();
   if(v==='add')renderAdd();
 }
 
@@ -1045,9 +1114,11 @@ function renderStations(){
   document.getElementById('st-header').innerHTML=wt.length?`<div class="card" style="border-left:4px solid ${sc2};display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;padding:9px 12px"><div><div style="font-size:16px;font-weight:bold;color:${sc2}">${curSt} — ${WEEK[curDay].full}</div><div style="font-size:17px;color:#333;margin-top:1px">${wt.length} staff on shift · Target: ${ST[curSt].target} ${ST[curSt].unit}/person/day</div></div><div style="font-size:17px;color:#444">Tap an employee to log production, protocol & waste</div></div>`:
   `<div style="padding:9px 12px;background:#F9F8F5;border:1px solid #E8E4DC;border-radius:8px;font-size:15px;color:#333">No <strong>${curSt}</strong> staff on ${WEEK[curDay].full}.</div>`;
   document.getElementById('emp-grid').innerHTML=wt.map(e=>{
-    const day=SD[e.id]?.[curDay]||{};const tg=ST[e.st]?.target||1;const pItems=PROD_ITEMS[e.st]||[];const dp=day.prodItems||[];const entProd=pItems.filter((_,i)=>dp[i]!==null&&dp[i]!==undefined);
-    const avgSc=entProd.length?Math.round(entProd.reduce((a,item)=>{const i=pItems.indexOf(item);return a+Math.min((Number(dp[i])/item.target)*100,150);},0)/entProd.length):null;
-    const proto=PROTO[e.st]||[];const protoVals=(day.protocol||[]);const pdNA=protoVals.filter(v=>v==='na').length;const pdApplicable=proto.length-pdNA;const pd=protoVals.filter(v=>v===true).length;const pp=pdApplicable>0?Math.round((pd/pdApplicable)*100):0;
+    const day=SD[e.id]?.[curDay]||{};const tg=ST[e.st]?.target||1;const pItemsAll=PROD_ITEMS[e.st]||[];const dp=day.prodItems||[];
+    const pList=pItemsAll.map((item,i)=>({item,i})).filter(o=>prodAppliesTo(e.st,o.item.label,e));
+    const entProd=pList.filter(o=>dp[o.i]!==null&&dp[o.i]!==undefined&&dp[o.i]!=='na');
+    const avgSc=entProd.length?Math.round(entProd.reduce((a,o)=>a+Math.min((Number(dp[o.i])/o.item.target)*100,150),0)/entProd.length):null;
+    const protoAll=PROTO[e.st]||[];const protoVals=(day.protocol||[]);const protoIdx=protoAll.map((t,i)=>i).filter(i=>itemAppliesTo(protoAll[i],e));const pdNA=protoIdx.filter(i=>protoVals[i]==='na').length;const pdApplicable=protoIdx.length-pdNA;const pd=protoIdx.filter(i=>protoVals[i]===true).length;const pp=pdApplicable>0?Math.round((pd/pdApplicable)*100):0;
     const waste=WASTE_ITEMS[e.st]||[];const wasted=waste.filter((_,i)=>day.waste?.[i]&&Number(day.waste[i])>0).length;
     const ov=empOverall(e.id);
     return `<div class="ecard" onclick="openProf(${e.id})" style="border-left:4px solid ${sc2}">
@@ -1058,9 +1129,9 @@ function renderStations(){
         <div style="text-align:right;flex-shrink:0;margin-left:7px"><div style="font-size:21px;font-weight:bold;color:${sc(ov)}">${ov}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:7px;color:#444">WEEKLY</div></div>
       </div>
       <div style="margin-bottom:6px;padding:6px 8px;background:${avgSc!==null?'#F9F8F5':'#FFF8F0'};border-radius:5px;border:1px solid ${avgSc!==null?'#EEE':'#F0D5B0'}">
-        <div style="display:flex;justify-content:space-between;font-size:16px;color:#333;margin-bottom:3px"><span>Production (${entProd.length}/${pItems.length})</span>${avgSc!==null?`<span style="color:${sc(Math.min(avgSc,100))};font-weight:bold">${Math.min(avgSc,100)}%</span>`:`<span style="color:#E67E22;font-weight:bold">Not logged</span>`}</div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;color:#333;margin-bottom:3px"><span>Production (${entProd.length}/${pList.length})</span>${avgSc!==null?`<span style="color:${sc(Math.min(avgSc,100))};font-weight:bold">${Math.min(avgSc,100)}%</span>`:`<span style="color:#E67E22;font-weight:bold">Not logged</span>`}</div>
         ${avgSc!==null?`<div class="pbar"><div class="pfill" style="width:${Math.min(avgSc,100)}%;background:${avgSc>=100?'#27AE60':avgSc>=70?'#E67E22':'#E74C3C'}"></div></div>`:`<div style="font-size:16px;color:#8B6220">Tap to enter</div>`}
-        ${pItems.slice(0,4).map((item,i)=>{const v=dp[i];const hv=v!==null&&v!==undefined;const p=hv?Math.min(Math.round((Number(v)/item.target)*100),150):null;const isNA3=v==='na';return '<div style="font-size:15px;color:#222;margin-top:2px;display:flex;justify-content:space-between"><span>'+item.label+'</span><span style="color:'+(isNA3?'#AAA':hv?sc(Math.min(p,100)):'#CCC')+';font-weight:bold;font-style:'+(isNA3?'italic':'normal')+'">'+(isNA3?'N/A':hv?v+'/'+item.target+' ('+p+'%)':'—')+'</span></div>';}).join('')}
+        ${pList.slice(0,4).map(o=>{const item=o.item;const v=dp[o.i];const hv=v!==null&&v!==undefined;const p=hv&&v!=='na'?Math.min(Math.round((Number(v)/item.target)*100),150):null;const isNA3=v==='na';return '<div style="font-size:15px;color:#222;margin-top:2px;display:flex;justify-content:space-between"><span>'+item.label+'</span><span style="color:'+(isNA3?'#AAA':hv?sc(Math.min(p,100)):'#CCC')+';font-weight:bold;font-style:'+(isNA3?'italic':'normal')+'">'+(isNA3?'N/A':hv?v+'/'+item.target+' ('+p+'%)':'—')+'</span></div>';}).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:16px;color:#333;margin-bottom:2px"><span>Protocol (${pd}/${pdApplicable}${pdNA>0?" — "+pdNA+" N/A":""})</span><span style="color:${sc(pp)};font-weight:bold">${pp}%</span></div>
       <div class="pbar" style="margin-bottom:4px"><div class="pfill" style="width:${pp}%;background:${sc(pp)}"></div></div>
@@ -1078,17 +1149,20 @@ function renderProf(){
   const e=emps.find(x=>x.id===curEmpId);if(!e)return;
   const days=SD[e.id]||[];const day=days[curProfDay]||{};
   const stc=ST[e.st]||{target:0,unit:'',color:'#222'};const tg=stc.target;
-  const prodItems=PROD_ITEMS[e.st]||[];
-  const proto=PROTO[e.st]||[];const stPV=(day.protocol||[]);const pdNA=stPV.filter(v=>v==='na').length;const pdApplicable=proto.length-pdNA;const pd=stPV.filter(v=>v===true).length;const pp=pdApplicable>0?Math.round((pd/pdApplicable)*100):0;
+  const prodItemsAll=PROD_ITEMS[e.st]||[];
+  const prodList=prodItemsAll.map((item,i)=>({item,i})).filter(o=>prodAppliesTo(e.st,o.item.label,e));
+  const protoAll=PROTO[e.st]||[];const protoList=protoAll.map((text,i)=>({text,i})).filter(o=>itemAppliesTo(o.text,e));
+  const stPV=(day.protocol||[]);const pdNA=protoList.filter(o=>stPV[o.i]==='na').length;const pdApplicable=protoList.length-pdNA;const pd=protoList.filter(o=>stPV[o.i]===true).length;const pp=pdApplicable>0?Math.round((pd/pdApplicable)*100):0;
   const wasteItems=WASTE_ITEMS[e.st]||[];
   const ov=empOverall(e.id),wp=empProt(e.id),wpr=empProd(e.id);
   const wdays=days.filter(d=>d.working&&d.prodItems&&d.prodItems.some(v=>v!==null&&v!=='na'));
-  const todayScores=prodItems.map((item,i)=>{const v=day.prodItems?.[i];if(v===null||v===undefined)return null;if(v==='na')return 'na';return Math.min(Math.round((Number(v)/item.target)*100),150);});
+  const todayScores=prodList.map(o=>{const v=day.prodItems?.[o.i];if(v===null||v===undefined)return null;if(v==='na')return 'na';return Math.min(Math.round((Number(v)/o.item.target)*100),150);});
   const todayNA=todayScores.filter(s=>s==='na').length;
   const todayEntered=todayScores.filter(s=>s!==null&&s!=='na');
   const todayAvgScore=todayEntered.length?Math.round(todayEntered.reduce((a,s)=>a+s,0)/todayEntered.length):null;
   const tabs=WEEK.map((w,i)=>{const d=days[i]||{};return `<button class="daybtn${i===curProfDay?' active':''}" onclick="setPDay(${i})" style="${!d.working?'opacity:.4':''}"><div style="font-weight:bold;font-size:17px">${w.short}</div><div style="font-size:15px">${w.full.replace(w.short+' ','')}</div>${d.working?`<div style="font-size:17px;color:${i===curProfDay?'rgba(255,255,255,.8)':d.produced!==null?'#27AE60':'#E67E22'}">${d.produced!==null?'✓':'—'}</div>`:`<div style="font-size:17px;color:${i===curProfDay?'rgba(255,255,255,.5)':'#CCC'}">off</div>`}</button>`;}).join('');
-  const protoHtml=proto.map((text,i)=>{
+  const protoHtml=protoList.map(o=>{
+    const text=o.text,i=o.i;
     const val=(day.protocol||[])[i];
     const done=val===true;
     const isNA=val==='na';
@@ -1118,12 +1192,13 @@ function renderProf(){
     <div class="card" style="margin-bottom:9px">
       <button class="sec-toggle open" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">Production &#8212; ${WEEK[curProfDay].full}</div><span class="arr">&#9654;</span></button><div class="sec-body open">
       ${todayAvgScore!==null?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 11px;background:#FAFAF8;border:1px solid #E8E4DC;border-radius:6px">
-        <div style="font-size:16px;color:#333;flex:1">Score aujourd'hui (${todayEntered.length}/${prodItems.length} items)</div>
+        <div style="font-size:16px;color:#333;flex:1">Score aujourd'hui (${todayEntered.length}/${prodList.length} items)</div>
         <div style="font-size:23px;font-weight:bold;color:${sc(Math.min(todayAvgScore,100))}">${Math.min(todayAvgScore,100)}<span style="font-size:15px;color:#444">%</span></div>
         ${todayAvgScore>100?`<div style="font-size:16px;color:#27AE60;font-weight:bold">+${todayAvgScore-100}% above</div>`:''}
       </div>`:''}
       <div style="display:flex;flex-direction:column;gap:7px">
-      ${prodItems.map((item,i)=>{
+      ${prodList.map(o=>{
+        const item=o.item,i=o.i;
         const val=day.prodItems?.[i];
         const hasV=val!==null&&val!==undefined;
         const pct2=hasV?Math.min(Math.round((Number(val)/item.target)*100),150):null;
@@ -1174,11 +1249,11 @@ function renderProf(){
             <th style="color:#333;font-weight:normal;border-bottom:1px solid #EEE;padding:4px 5px;text-align:center">Target</th>
             ${WEEK.map((w,wi)=>SD[e.id]?.[wi]?.working?`<th style="color:#333;font-weight:normal;border-bottom:1px solid #EEE;padding:4px 3px;text-align:center">${w.short}<br><span style="font-size:17px">${w.full.replace(w.short+' ','')}</span></th>`:'').join('')}
           </tr>
-          ${prodItems.map((item,pi)=>`<tr style="border-bottom:1px solid #F5F5F5">
+          ${prodList.map(o=>{const item=o.item,pi=o.i;return `<tr style="border-bottom:1px solid #F5F5F5">
             <td style="padding:5px 6px;font-weight:bold;color:#333;white-space:nowrap">${item.label}</td>
             <td style="padding:5px 5px;text-align:center;color:${stc.color};font-weight:bold">${item.target}<br><span style="font-size:17px;font-weight:normal;color:#333">${item.unit}</span></td>
             ${WEEK.map((w,wi)=>{const d=SD[e.id]?.[wi];if(!d?.working)return '';const v=d.prodItems?.[pi];const hv=v!==null&&v!==undefined;const p2=hv?Math.min(Math.round((Number(v)/item.target)*100),150):null;const isNA2=v==='na';return '<td style="padding:5px 3px;text-align:center">'+(isNA2?'<div style="font-size:15px;color:#333;font-style:italic">N/A</div>':hv?'<div style="font-size:15px;font-weight:bold;color:'+sc(Math.min(p2,100))+'">'+v+'</div><div style="font-size:17px;color:'+sc(Math.min(p2,100))+'">'+p2+'%</div><div style="height:3px;background:#EEE;border-radius:2px;margin-top:2px;overflow:hidden"><div style="height:100%;width:'+Math.min(p2,100)+'%;background:'+sc(Math.min(p2,100))+';border-radius:2px"></div></div>':'<div style="font-size:16px;color:#444">&#8212;</div>')+'</td>';}).join('')}
-          </tr>`).join('')}
+          </tr>`;}).join('')}
         </table>
       </div>
     </div>`:''}
@@ -1196,6 +1271,12 @@ function renderProf(){
 </div>
     </div>`:''}
     <div class="card" style="margin-bottom:9px"><button class="sec-toggle" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">⚠️ Remarks / Incidents</div><span class="arr">&#9654;</span></button><div class="sec-body"><textarea class="field" rows="3" placeholder="Add a remark..." oninput="setRmk(this.value)">${day.remarks||''}</textarea>
+      <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        <label class="photo-add-btn" for="rem-photo-input">📷 Joindre des photos</label>
+        <input type="file" id="rem-photo-input" accept="image/*" multiple style="display:none" onchange="addRemPhotos(this.files);this.value=''"/>
+        <span style="font-size:13px;color:#888">Preuve photo de l'incident (stockée sur cet appareil)</span>
+      </div>
+      <div id="rem-photos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">${remPhotosHtml(e.id,curProfDay)}</div>
 </div></div>`:
     `<div style="padding:11px;background:#F9F8F5;border:1px solid #E8E4DC;border-radius:8px;font-size:15px;color:#333;text-align:center">${e.name} is <strong>off</strong> on ${WEEK[curProfDay].full}.</div>`}
     ${incLog?`<div class="card"><div class="stitle" style="margin-top:0">📋 Incident Log</div>${incLog}</div>`:''}`;
@@ -1327,6 +1408,7 @@ function renderActions(){
   document.getElementById('custom-actions-list').innerHTML=customs.length?customs.map((c,i)=>`<div class="crow${c.done?' done':''}" onclick="togCustom(${i})"><div class="cbox${c.done?' done':''}"><svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="ctext">${c.text}</span><button onclick="event.stopPropagation();removeCustom(${i})" style="background:none;border:none;color:#999;font-size:17px;padding:0 2px;line-height:1">×</button></div>`).join(''):
   `<div style="font-size:17px;color:#333;padding:7px 0">No custom actions. Add one below.</div>`;
   document.getElementById('act-notes').value=ACT_NOTES[curActDay]||'';
+  renderActPhotos();
 }
 function selActDay(i){curActDay=i;save('curActDay2',i);renderActions();}
 function togFridge(id){ACT_FRIDGE[curActDay][id]=!ACT_FRIDGE[curActDay][id];saveAll();renderActions();}
@@ -1334,6 +1416,58 @@ function togCustom(i){ACT_CUSTOM[curActDay][i].done=!ACT_CUSTOM[curActDay][i].do
 function removeCustom(i){ACT_CUSTOM[curActDay].splice(i,1);saveAll();renderActions();}
 function addCustomAction(){const inp=document.getElementById('new-action-text');const text=inp.value.trim();if(!text)return;ACT_CUSTOM[curActDay].push({text,done:false});inp.value='';saveAll();renderActions();}
 function saveActNotes(){ACT_NOTES[curActDay]=document.getElementById('act-notes').value;saveAll();}
+function compressImage(file,cb){
+  const r=new FileReader();
+  r.onload=ev=>{const img=new Image();img.onload=()=>{
+    const max=800;let w=img.width,h=img.height;
+    if(w>max){h=Math.round(h*max/w);w=max;}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    cb(c.toDataURL('image/jpeg',0.62));
+  };img.src=ev.target.result;};
+  r.readAsDataURL(file);
+}
+function addActPhotos(files){
+  if(!ACT_PHOTOS[curActDay])ACT_PHOTOS[curActDay]=[];
+  if(ACT_PHOTOS[curActDay].length+files.length>12){alert('Maximum 12 photos par jour.');return;}
+  Array.from(files).forEach(f=>{
+    if(!f.type.startsWith('image/'))return;
+    compressImage(f,data=>{
+      ACT_PHOTOS[curActDay].push({data,name:f.name,ts:Date.now()});
+      try{save('ACT_PHOTOS',ACT_PHOTOS);}catch(e){ACT_PHOTOS[curActDay].pop();alert('Stockage plein — supprimez d\'anciennes photos.');}
+      renderActPhotos();
+    });
+  });
+}
+function remKey(){return curEmpId+'_'+curProfDay;}
+function remPhotosHtml(empId,di){
+  const ph=REM_PHOTOS[empId+'_'+di]||[];
+  return ph.length?ph.map((p,i)=>`<div class="photo-thumb"><img src="${p.data}" onclick="viewRemPhoto('${empId+'_'+di}',${i})" title="${p.name||''}"/><button class="photo-del" onclick="removeRemPhoto('${empId+'_'+di}',${i})">×</button></div>`).join(''):
+  '<div style="font-size:14px;color:#999">Aucune photo jointe.</div>';
+}
+function addRemPhotos(files){
+  const k=remKey();
+  if(!REM_PHOTOS[k])REM_PHOTOS[k]=[];
+  if(REM_PHOTOS[k].length+files.length>8){alert('Maximum 8 photos par remarque.');return;}
+  Array.from(files).forEach(f=>{
+    if(!f.type.startsWith('image/'))return;
+    compressImage(f,data=>{
+      REM_PHOTOS[k].push({data,name:f.name,ts:Date.now()});
+      try{save('REM_PHOTOS',REM_PHOTOS);}catch(e){REM_PHOTOS[k].pop();alert('Stockage plein — supprimez d\'anciennes photos.');return;}
+      const el=document.getElementById('rem-photos');if(el)el.innerHTML=remPhotosHtml(curEmpId,curProfDay);
+    });
+  });
+}
+function removeRemPhoto(k,i){if(!confirm('Supprimer cette photo ?'))return;(REM_PHOTOS[k]||[]).splice(i,1);if(!REM_PHOTOS[k].length)delete REM_PHOTOS[k];save('REM_PHOTOS',REM_PHOTOS);const el=document.getElementById('rem-photos');if(el)el.innerHTML=remPhotosHtml(curEmpId,curProfDay);}
+function viewRemPhoto(k,i){const p=(REM_PHOTOS[k]||[])[i];if(!p)return;const w=window.open('');w.document.write('<body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="'+p.data+'" style="max-width:100%;max-height:100vh"/></body>');}
+function removeActPhoto(i){if(!confirm('Supprimer cette photo ?'))return;ACT_PHOTOS[curActDay].splice(i,1);save('ACT_PHOTOS',ACT_PHOTOS);renderActPhotos();}
+function viewActPhoto(i){const p=ACT_PHOTOS[curActDay][i];if(!p)return;const w=window.open('');w.document.write('<body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="'+p.data+'" style="max-width:100%;max-height:100vh"/></body>');}
+function renderActPhotos(){
+  const el=document.getElementById('act-photos');if(!el)return;
+  const ph=ACT_PHOTOS[curActDay]||[];
+  el.innerHTML=ph.length?ph.map((p,i)=>`<div class="photo-thumb"><img src="${p.data}" onclick="viewActPhoto(${i})" title="${p.name||''}"/><button class="photo-del" onclick="removeActPhoto(${i})">×</button></div>`).join(''):
+  '<div style="font-size:14px;color:#999">Aucune photo pour ce jour.</div>';
+}
 
 // ── CHART ─────────────────────────────────────────────────────────────────────
 function setMetric(m,btn){curMetric=m;document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderChart();}
@@ -1345,6 +1479,228 @@ function renderChart(){
   document.getElementById('chart-sum').innerHTML=[['🏆 Top Performer',sorted[0]?.name,'#27AE60'],['📊 Team Average',avg+'%','#8B6220'],['⚠️ Below 55%',scored.filter(e=>e.ov<55).length+' staff','#E74C3C']].map(([l,v,c])=>`<div class="card"><div style="font-size:16px;color:#333;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px">${l}</div><div style="font-size:16px;color:${c};font-weight:bold">${v}</div></div>`).join('');
   document.getElementById('chart-bars').innerHTML=`<div style="display:flex;gap:9px;margin-bottom:10px;flex-wrap:wrap">${[['#27AE60','≥80%'],['#E67E22','55–79%'],['#E74C3C','<55%']].map(([c,l])=>`<div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:2px;background:${c}"></div><span style="font-size:16px;color:#333">${l}</span></div>`).join('')}</div><div style="display:flex;flex-direction:column;gap:6px">${sorted.map((e,i)=>{const val=gv(e);const stc=ST[e.st]||{color:'#222',target:0,unit:''};const wd=SD[e.id]?.filter(d=>d.working&&d.produced!==null)||[];const avg=wd.length?Math.round(wd.reduce((a,d)=>a+Number(d.produced),0)/wd.length):null;return `<div onclick="openProfFromStaff(${e.id})" style="cursor:pointer;display:flex;align-items:center;gap:7px" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'"><div style="font-size:15px;color:#444;width:17px;text-align:right;flex-shrink:0">#${i+1}</div><div style="width:150px;flex-shrink:0"><div style="font-size:17px;color:#333;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div><div style="font-size:15px;color:${stc.color}">${e.st}${avg!==null?' · '+avg+'/'+stc.target+' '+stc.unit:''}</div></div><div class="barcont"><div class="barfill" style="width:${val}%;background:${sc(val)};min-width:${val>0?26:0}px">${val}%</div></div></div>`;}).join('')}</div>`;
   document.getElementById('st-avgs').innerHTML=Object.entries(ST).map(([n,s])=>{const se=scored.filter(e=>e.st===n);if(!se.length)return'';const a=Math.round(se.reduce((acc,e)=>acc+e.ov,0)/se.length);return `<div class="card" style="border-left:4px solid ${s.color}"><div style="font-size:15px;color:${s.color};letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;font-weight:bold">${n}</div><div style="font-size:17px;font-weight:bold;color:${sc(a)}">${a}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:15px;color:#333;margin-top:1px">${se.length} staff · ${s.target} ${s.unit}/day</div></div>`;}).join('');
+}
+
+
+// ── REPORT ────────────────────────────────────────────────────────────────────
+let curRepMode='daily',curRepDay=load('curRepDay',0);
+function setRepMode(m){curRepMode=m;document.getElementById('rep-daily-btn').classList.toggle('active',m==='daily');document.getElementById('rep-weekly-btn').classList.toggle('active',m==='weekly');renderReport();}
+function protoIdxFor(e){const pa=PROTO[e.st]||[];return pa.map((t,i)=>i).filter(i=>itemAppliesTo(pa[i],e));}
+function prodListFor(e){return (PROD_ITEMS[e.st]||[]).map((item,i)=>({item,i})).filter(o=>prodAppliesTo(e.st,o.item.label,e));}
+function dayProtoPct(e,d){const idx=protoIdxFor(e);const pv=d.protocol||[];const app=idx.filter(i=>pv[i]!=='na');if(!app.length)return null;return Math.round(app.filter(i=>pv[i]===true).length/app.length*100);}
+function dayProdPct(e,d){const pl=prodListFor(e);const dp=d.prodItems||[];const ent=pl.filter(o=>dp[o.i]!==null&&dp[o.i]!==undefined&&dp[o.i]!=='na');if(!ent.length)return null;return Math.min(Math.round(ent.reduce((a,o)=>a+Math.min(Number(dp[o.i])/o.item.target*100,150),0)/ent.length),100);}
+function selRepDay(i){curRepDay=i;save('curRepDay',i);renderReport();}
+function kpi(v,l,c){return `<div class="rep-kpi"><div class="v" style="color:${c||'#1A1A1A'}">${v}</div><div class="l">${l}</div></div>`;}
+
+function renderReport(){
+  document.getElementById('rep-day-btns').innerHTML=curRepMode==='daily'?WEEK.map((w,i)=>`<button class="daybtn${i===curRepDay?' active':''}" onclick="selRepDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div></button>`).join(''):'';
+  document.getElementById('report-content').innerHTML=curRepMode==='daily'?buildDailyReport(curRepDay):buildWeeklyReport();
+}
+
+function buildDailyReport(di){
+  const w=WEEK[di];
+  const working=emps.filter(e=>SD[e.id]?.[di]?.working);
+  // KPIs
+  let prodLogged=0,protoVals=[],wasteEntries=[],incidents=[];
+  working.forEach(e=>{
+    const d=SD[e.id][di];
+    if(dayProdPct(e,d)!==null)prodLogged++;
+    const pp=dayProtoPct(e,d);if(pp!==null)protoVals.push(pp);
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteEntries.push({emp:e.name,st:e.st,label:lbl,qty:v});});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incidents.push({emp:e.name,st:e.st,text:d.remarks||'(photo jointe sans texte)',key:e.id+'_'+di,photos:REM_PHOTOS[e.id+'_'+di]||[]});
+  });
+  const protoAvg=protoVals.length?Math.round(protoVals.reduce((a,v)=>a+v,0)/protoVals.length):null;
+  const dels=DEL[di]?.deliveries||[];
+  const delOk=dels.filter(d=>d.onTime===true&&d.correct===true).length;
+  const invAlerts=[];Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){const it=INV_ITEMS.find(x=>x.id===id);if(it)invAlerts.push({n:it.n,loc:it.loc,status:d.status,qty:d.qty,notes:d.notes,par:it.par});}});
+  const fr=ACT_FRIDGE[di]||{};const frDone=FRIDGE_ITEMS.filter(f=>fr[f.id]).length;
+  const cust=ACT_CUSTOM[di]||[];const custDone=cust.filter(c=>c.done).length;
+  const photos=ACT_PHOTOS[di]||[];
+
+  // Production par station
+  const stRows=Object.keys(ST).map(st=>{
+    const team=working.filter(e=>e.st===st);if(!team.length)return '';
+    return team.map(e=>{
+      const d=SD[e.id][di];const pl=prodListFor(e);const dp=d.prodItems||[];
+      const ent=pl.filter(o=>dp[o.i]!==null&&dp[o.i]!==undefined&&dp[o.i]!=='na');
+      const pct=dayProdPct(e,d);const pp=dayProtoPct(e,d);
+      return `<tr><td style="color:${ST[st].color};font-weight:bold">${st}</td><td>${e.name}</td><td style="text-align:center">${ent.length}/${pl.length}</td><td style="text-align:center;font-weight:bold;color:${pct===null?'#BBB':sc(pct)}">${pct===null?'—':pct+'%'}</td><td style="text-align:center;font-weight:bold;color:${pp===null?'#BBB':sc(pp)}">${pp===null?'—':pp+'%'}</td></tr>`;
+    }).join('');
+  }).join('');
+
+  return `
+  <div class="rep-card" style="border-left:4px solid #8B6220">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:baseline">
+      <div><div style="font-size:18px;font-weight:bold">Rapport journalier — ${w.full}</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · Semaine du 25–31 mai 2026</div></div>
+      <div style="font-size:13px;color:#888">Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px">
+    ${kpi(working.length,'Staff présent','#8B6220')}
+    ${kpi(prodLogged+'/'+working.length,'Production saisie',prodLogged===working.length?'#27AE60':'#E67E22')}
+    ${kpi(protoAvg===null?'—':protoAvg+'%','Protocole moyen',protoAvg===null?'#BBB':sc(protoAvg))}
+    ${kpi(wasteEntries.length,'Entrées gaspillage',wasteEntries.length?'#E74C3C':'#27AE60')}
+    ${kpi(incidents.length,'Incidents',incidents.length?'#E74C3C':'#27AE60')}
+    ${kpi(dels.length?delOk+'/'+dels.length:'—','Livraisons OK',dels.length?(delOk===dels.length?'#27AE60':'#E67E22'):'#BBB')}
+    ${kpi(invAlerts.length,'Alertes stock',invAlerts.length?'#E67E22':'#27AE60')}
+    ${kpi(frDone+'/'+FRIDGE_ITEMS.length,'Checks HACCP',frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22')}
+  </div>
+  <div class="rep-card"><div class="rep-title">👥 Production & protocole par employé</div>
+    ${working.length?`<div style="overflow-x:auto"><table class="rep-table"><tr><th>Station</th><th>Employé</th><th style="text-align:center">Items saisis</th><th style="text-align:center">Production</th><th style="text-align:center">Protocole</th></tr>${stRows}</table></div>`:'<div style="font-size:14px;color:#999">Personne ne travaille ce jour.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🗑️ Gaspillage / restes</div>
+    ${wasteEntries.length?`<table class="rep-table"><tr><th>Employé</th><th>Item</th><th style="text-align:center">Quantité</th></tr>${wasteEntries.map(x=>`<tr><td>${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span></td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucun gaspillage enregistré.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">⚠️ Incidents / remarques</div>
+    ${incidents.length?incidents.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.emp}</strong> <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.photos.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.photos.map((p,pi)=>`<img src="${p.data}" style="width:70px;height:70px;object-fit:cover;border-radius:5px;border:1px solid #E8A3A3;cursor:pointer" onclick="viewRemPhoto('${x.key}',${pi})"/>`).join('')}</div>`:''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ Aucun incident.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🚚 Livraisons (Olivier)</div>
+    ${dels.length?dels.map((d,i)=>`<div style="padding:6px 9px;border:1px solid #EEE;border-radius:5px;margin-bottom:5px;font-size:14px;background:${d.onTime&&d.correct?'#F0FAF4':'#FFF8F0'}">#${i+1} · Créneau: ${d.window||'—'} · ${d.onTime===true?'✓ À l\'heure':d.onTime===false?'✗ En retard':'—'} · ${d.correct===true?'✓ Conforme':d.correct===false?'✗ Problème':'—'} · Lieu: ${d.location||'—'}${d.notes?'<br><span style="color:#666">'+d.notes+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#999">Aucune livraison enregistrée.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">📦 Inventaire — alertes stock</div>
+    ${invAlerts.length?`<table class="rep-table"><tr><th>Produit</th><th>Lieu</th><th style="text-align:center">Par</th><th style="text-align:center">En stock</th><th style="text-align:center">Statut</th></tr>${invAlerts.map(x=>`<tr><td>${x.n}</td><td>${x.loc}</td><td style="text-align:center">${x.par}</td><td style="text-align:center">${x.qty||'—'}</td><td style="text-align:center;font-weight:bold;color:${x.status==='out'?'#E74C3C':'#E67E22'}">${x.status==='out'?'✗ Rupture':'⚠ Bas'}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucune alerte stock.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">✅ Actions & HACCP</div>
+    <div style="font-size:14px;margin-bottom:5px">Checks frigo / HACCP : <strong style="color:${frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22'}">${frDone}/${FRIDGE_ITEMS.length}</strong> · Actions personnalisées : <strong>${custDone}/${cust.length}</strong></div>
+    ${cust.filter(c=>!c.done).length?'<div style="font-size:13px;color:#E67E22">À faire : '+cust.filter(c=>!c.done).map(c=>c.text).join(' · ')+'</div>':''}
+    ${ACT_NOTES[di]?`<div style="margin-top:7px;padding:7px 9px;background:#FDF9F3;border-radius:5px;font-size:14px"><strong>Notes :</strong> ${ACT_NOTES[di]}</div>`:''}
+    ${photos.length?`<div style="margin-top:8px"><div style="font-size:13px;color:#888;margin-bottom:5px">📷 ${photos.length} photo(s)</div><div style="display:flex;gap:6px;flex-wrap:wrap">${photos.map((p,i)=>`<img src="${p.data}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #E8E4DC;cursor:pointer" onclick="curActDay=${di};viewActPhoto(${i})"/>`).join('')}</div></div>`:''}
+  </div>`;
+}
+
+function buildWeeklyReport(){
+  const scored=emps.map(e=>({e,pt:empProt(e.id),pr:Math.min(empProd(e.id),100),ov:empOverall(e.id),days:SD[e.id]?.filter(d=>d.working).length||0}));
+  const avg=Math.round(scored.reduce((a,x)=>a+x.ov,0)/scored.length);
+  const sorted=[...scored].sort((a,b)=>b.ov-a.ov);
+  let wasteAll=[],incAll=[];
+  emps.forEach(e=>{(SD[e.id]||[]).forEach((d,di)=>{
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteAll.push({day:WEEK[di].short,emp:e.name,label:lbl,qty:v});});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push({day:WEEK[di].short,emp:e.name,st:e.st,text:d.remarks||'(photo jointe sans texte)',nph:(REM_PHOTOS[e.id+'_'+di]||[]).length});
+  });});
+  let delAll=[];WEEK.forEach((w,di)=>{(DEL[di]?.deliveries||[]).forEach(d=>delAll.push({day:w.short,...d}));});
+  const delOk=delAll.filter(d=>d.onTime===true&&d.correct===true).length;
+  const invFlag={};WEEK.forEach((w,di)=>{Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){if(!invFlag[id])invFlag[id]=[];invFlag[id].push({day:w.short,status:d.status});}});});
+  const frTot=WEEK.reduce((a,w,di)=>a+FRIDGE_ITEMS.filter(f=>(ACT_FRIDGE[di]||{})[f.id]).length,0);
+  const photosTot=ACT_PHOTOS.reduce((a,p)=>a+(p?.length||0),0);
+
+  return `
+  <div class="rep-card" style="border-left:4px solid #8B6220">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:baseline">
+      <div><div style="font-size:18px;font-weight:bold">Rapport hebdomadaire — Semaine du 25–31 mai 2026</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · ${emps.length} employés</div></div>
+      <div style="font-size:13px;color:#888">Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin-bottom:10px">
+    ${kpi(avg+'%','Score moyen équipe',sc(avg))}
+    ${kpi(sorted[0]?sorted[0].e.name.split(',')[0]:'—','Top performer','#27AE60')}
+    ${kpi(scored.filter(x=>x.ov<55).length,'Sous 55%',scored.filter(x=>x.ov<55).length?'#E74C3C':'#27AE60')}
+    ${kpi(incAll.length,'Incidents',incAll.length?'#E74C3C':'#27AE60')}
+    ${kpi(wasteAll.length,'Entrées gaspillage',wasteAll.length?'#E67E22':'#27AE60')}
+    ${kpi(delAll.length?delOk+'/'+delAll.length:'—','Livraisons OK',delAll.length?(delOk===delAll.length?'#27AE60':'#E67E22'):'#BBB')}
+    ${kpi(frTot+'/'+FRIDGE_ITEMS.length*7,'Checks HACCP',frTot===FRIDGE_ITEMS.length*7?'#27AE60':'#E67E22')}
+    ${kpi(photosTot,'Photos','#8B6220')}
+  </div>
+  <div class="rep-card"><div class="rep-title">📊 Scores par station</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px">
+    ${Object.entries(ST).map(([n,cfg])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return '';const a=Math.round(t.reduce((acc,x)=>acc+x.ov,0)/t.length);return `<div style="padding:8px;border:1px solid #E8E4DC;border-left:4px solid ${cfg.color};border-radius:6px"><div style="font-size:12px;color:${cfg.color};font-weight:bold;text-transform:uppercase">${n}</div><div style="font-size:18px;font-weight:bold;color:${sc(a)}">${a}%</div><div style="font-size:12px;color:#888">${t.length} employé(s)</div></div>`;}).join('')}
+    </div>
+  </div>
+  <div class="rep-card"><div class="rep-title">👥 Détail par employé</div>
+    <div style="overflow-x:auto"><table class="rep-table">
+      <tr><th>#</th><th>Employé</th><th>Station</th><th style="text-align:center">Jours</th><th style="text-align:center">Protocole</th><th style="text-align:center">Production</th><th style="text-align:center">Score global</th></tr>
+      ${sorted.map((x,i)=>`<tr><td style="color:#999">${i+1}</td><td style="font-weight:bold">${x.e.name}</td><td style="color:${ST[x.e.st]?.color||'#666'}">${x.e.st}</td><td style="text-align:center">${x.days}</td><td style="text-align:center;color:${sc(x.pt)}">${x.pt}%</td><td style="text-align:center;color:${sc(x.pr)}">${x.pr}%</td><td style="text-align:center;font-weight:bold;color:${sc(x.ov)}">${x.ov}%</td></tr>`).join('')}
+    </table></div>
+  </div>
+  <div class="rep-card"><div class="rep-title">⚠️ Incidents de la semaine</div>
+    ${incAll.length?incAll.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.day}</strong> · ${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.nph?' <span style="color:#8B6220;font-weight:bold">📷 '+x.nph+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ Aucun incident cette semaine.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🗑️ Gaspillage de la semaine</div>
+    ${wasteAll.length?`<table class="rep-table"><tr><th>Jour</th><th>Employé</th><th>Item</th><th style="text-align:center">Qté</th></tr>${wasteAll.map(x=>`<tr><td>${x.day}</td><td>${x.emp}</td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucun gaspillage enregistré.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🚚 Livraisons de la semaine</div>
+    ${delAll.length?`<table class="rep-table"><tr><th>Jour</th><th>Créneau</th><th style="text-align:center">À l'heure</th><th style="text-align:center">Conforme</th><th>Lieu</th><th>Notes</th></tr>${delAll.map(d=>`<tr><td>${d.day}</td><td>${d.window||'—'}</td><td style="text-align:center">${d.onTime===true?'✓':d.onTime===false?'✗':'—'}</td><td style="text-align:center">${d.correct===true?'✓':d.correct===false?'✗':'—'}</td><td>${d.location||'—'}</td><td style="font-size:12px;color:#666">${d.notes||''}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#999">Aucune livraison enregistrée.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">📦 Produits signalés (bas / rupture)</div>
+    ${Object.keys(invFlag).length?`<table class="rep-table"><tr><th>Produit</th><th>Jours concernés</th></tr>${Object.entries(invFlag).map(([id,flags])=>{const it=INV_ITEMS.find(x=>x.id===id);return it?`<tr><td>${it.n} <span style="color:#999;font-size:12px">(${it.loc})</span></td><td>${flags.map(f=>`<span style="color:${f.status==='out'?'#E74C3C':'#E67E22'};font-weight:bold">${f.day}${f.status==='out'?' ✗':' ⚠'}</span>`).join(' · ')}</td></tr>`:'';}).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ Aucun produit signalé.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">📝 Notes journalières</div>
+    ${WEEK.map((w,di)=>ACT_NOTES[di]?`<div style="margin-bottom:5px;font-size:14px"><strong>${w.short}</strong> — ${ACT_NOTES[di]}</div>`:'').join('')||'<div style="font-size:14px;color:#999">Aucune note cette semaine.</div>'}
+  </div>`;
+}
+
+// ── EMAIL DU RAPPORT ──────────────────────────────────────────────────────────
+let REPORT_EMAIL=load('REPORT_EMAIL','');
+function changeReportEmail(){
+  const v=prompt('Adresse email du destinataire du rapport :',REPORT_EMAIL||'');
+  if(v===null)return;
+  REPORT_EMAIL=v.trim();save('REPORT_EMAIL',REPORT_EMAIL);
+  if(REPORT_EMAIL)alert('Destinataire enregistré : '+REPORT_EMAIL);
+}
+function buildDailyEmailText(di){
+  const w=WEEK[di];const L=[];
+  const working=emps.filter(e=>SD[e.id]?.[di]?.working);
+  let prodLogged=0,protoVals=[],wasteE=[],incs=[];
+  working.forEach(e=>{const d=SD[e.id][di];
+    if(dayProdPct(e,d)!==null)prodLogged++;
+    const pp=dayProtoPct(e,d);if(pp!==null)protoVals.push(pp);
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteE.push(e.name.split(',')[0]+': '+lbl+' = '+v);});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incs.push(e.name+' ('+e.st+') — '+(d.remarks||'photo jointe')+((REM_PHOTOS[e.id+'_'+di]||[]).length?' [+'+(REM_PHOTOS[e.id+'_'+di]||[]).length+' photo(s)]':''));
+  });
+  const protoAvg=protoVals.length?Math.round(protoVals.reduce((a,v)=>a+v,0)/protoVals.length):null;
+  const dels=DEL[di]?.deliveries||[];const delOk=dels.filter(d=>d.onTime===true&&d.correct===true).length;
+  const invA=[];Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){const it=INV_ITEMS.find(x=>x.id===id);if(it)invA.push(it.n+' ('+it.loc+') : '+(d.status==='out'?'RUPTURE':'bas'));}});
+  const fr=ACT_FRIDGE[di]||{};const frDone=FRIDGE_ITEMS.filter(f=>fr[f.id]).length;
+  const nPh=(ACT_PHOTOS[di]||[]).length;
+  L.push('LAPIS BOH — RAPPORT JOURNALIER');L.push(w.full+' · Semaine du 25-31 mai 2026');L.push('');
+  L.push('— RESUME —');
+  L.push('Staff present : '+working.length);
+  L.push('Production saisie : '+prodLogged+'/'+working.length);
+  L.push('Protocole moyen : '+(protoAvg===null?'—':protoAvg+'%'));
+  L.push('Checks HACCP : '+frDone+'/'+FRIDGE_ITEMS.length);
+  L.push('Livraisons OK : '+(dels.length?delOk+'/'+dels.length:'aucune'));
+  L.push('');
+  L.push('— INCIDENTS ('+incs.length+') —');incs.length?incs.forEach(x=>L.push('• '+x)):L.push('Aucun');L.push('');
+  L.push('— GASPILLAGE ('+wasteE.length+') —');wasteE.length?wasteE.forEach(x=>L.push('• '+x)):L.push('Aucun');L.push('');
+  L.push('— ALERTES STOCK ('+invA.length+') —');invA.length?invA.forEach(x=>L.push('• '+x)):L.push('Aucune');L.push('');
+  if(ACT_NOTES[di])L.push('— NOTES —\n'+ACT_NOTES[di]+'\n');
+  if(nPh)L.push('('+nPh+' photo(s) du jour : voir l\'application)');
+  return L.join('\n');
+}
+function buildWeeklyEmailText(){
+  const L=[];
+  const scored=emps.map(e=>({e,ov:empOverall(e.id)}));
+  const avg=Math.round(scored.reduce((a,x)=>a+x.ov,0)/scored.length);
+  const sorted=[...scored].sort((a,b)=>b.ov-a.ov);
+  const below=sorted.filter(x=>x.ov<55);
+  let incAll=[],wasteN=0;
+  emps.forEach(e=>{(SD[e.id]||[]).forEach((d,di)=>{
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteN++;});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push(WEEK[di].short+' · '+e.name+' — '+(d.remarks||'photo jointe'));
+  });});
+  let delAll=[],delOk=0;WEEK.forEach((w,di)=>{(DEL[di]?.deliveries||[]).forEach(d=>{delAll.push(d);if(d.onTime===true&&d.correct===true)delOk++;});});
+  L.push('LAPIS BOH — RAPPORT HEBDOMADAIRE');L.push('Semaine du 25-31 mai 2026 · '+emps.length+' employes');L.push('');
+  L.push('— RESUME —');
+  L.push('Score moyen equipe : '+avg+'%');
+  L.push('Top performer : '+(sorted[0]?sorted[0].e.name+' ('+sorted[0].ov+'%)':'—'));
+  L.push('Sous 55% : '+(below.length?below.map(x=>x.e.name.split(',')[0]+' ('+x.ov+'%)').join(', '):'aucun'));
+  L.push('Incidents : '+incAll.length+' · Gaspillage : '+wasteN+' entrees · Livraisons OK : '+(delAll.length?delOk+'/'+delAll.length:'aucune'));
+  L.push('');
+  L.push('— SCORES PAR STATION —');
+  Object.entries(ST).forEach(([n])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return;L.push('• '+n+' : '+Math.round(t.reduce((a,x)=>a+x.ov,0)/t.length)+'% ('+t.length+' pers.)');});
+  L.push('');
+  L.push('— TOP 5 —');sorted.slice(0,5).forEach((x,i)=>L.push((i+1)+'. '+x.e.name+' : '+x.ov+'%'));L.push('');
+  L.push('— INCIDENTS ('+incAll.length+') —');incAll.length?incAll.slice(0,15).forEach(x=>L.push('• '+x)):L.push('Aucun');
+  if(incAll.length>15)L.push('… +'+(incAll.length-15)+' autres (voir l\'application)');
+  return L.join('\n');
+}
+function sendReportEmail(){
+  if(!REPORT_EMAIL){changeReportEmail();if(!REPORT_EMAIL)return;}
+  const isDaily=curRepMode==='daily';
+  const subject='Lapis BOH — Rapport '+(isDaily?'journalier · '+WEEK[curRepDay].full:'hebdomadaire · Semaine du 25-31 mai 2026');
+  let body=isDaily?buildDailyEmailText(curRepDay):buildWeeklyEmailText();
+  body+='\n\n---\nRapport genere par Lapis Kitchen OS le '+new Date().toLocaleDateString('fr-FR')+'.\nPour la version complete avec photos : ouvrir l\'application > Report > Imprimer/PDF.';
+  if(body.length>1800)body=body.slice(0,1750)+'\n… (rapport tronque — version complete dans l\'application)';
+  window.location.href='mailto:'+encodeURIComponent(REPORT_EMAIL)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
 }
 
 // ── ADD ───────────────────────────────────────────────────────────────────────
