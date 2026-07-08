@@ -76,6 +76,25 @@ textarea.field{resize:vertical;line-height:1.5}
 .sec-toggle.open .arr{transform:rotate(90deg);}
 .sec-body{overflow:hidden;transition:max-height .35s ease,opacity .25s ease;max-height:0;opacity:0;pointer-events:none;}
 .sec-body.open{max-height:9999px;opacity:1;pointer-events:auto;}
+.photo-thumb{position:relative;width:92px;height:92px;border-radius:7px;overflow:hidden;border:1px solid #E8E4DC;background:#FAFAF8}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.photo-del{position:absolute;top:3px;right:3px;background:rgba(231,76,60,.92);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-add-btn{display:inline-flex;align-items:center;gap:6px;background:#8B6220;color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:15px;cursor:pointer}
+.rep-card{background:#fff;border:1px solid #E8E4DC;border-radius:8px;padding:13px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.rep-title{font-size:15px;font-weight:bold;color:#8B6220;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;border-bottom:2px solid #F0EDE6;padding-bottom:5px}
+.rep-table{width:100%;border-collapse:collapse;font-size:14px}
+.rep-table th{text-align:left;padding:5px 7px;color:#555;font-weight:bold;border-bottom:2px solid #EEE;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.rep-table td{padding:5px 7px;border-bottom:1px solid #F5F5F5;color:#333}
+.rep-kpi{text-align:center;padding:10px 6px;background:#FAFAF8;border:1px solid #E8E4DC;border-radius:7px}
+.rep-kpi .v{font-size:20px;font-weight:bold;line-height:1.1}
+.rep-kpi .l{font-size:11px;color:#666;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+@media print{
+  .nav,.save-badge,#rep-controls,#rep-day-btns{display:none!important}
+  .page{display:none!important}
+  #view-report.active{display:block!important;max-width:100%;padding:0}
+  body{background:#fff}
+  .rep-card{box-shadow:none;break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -90,7 +109,8 @@ textarea.field{resize:vertical;line-height:1.5}
     <button class="nbtn" onclick="showView('delivery')">Delivery</button>
     <button class="nbtn" onclick="showView('inventory')">Inventory</button>
     <button class="nbtn" onclick="showView('actions')">Actions</button>
-    <button class="nbtn" onclick="showView('chart')">Chart</button>
+    <button class="nbtn" onclick="showView('report')">Report</button>
+    <button class="nbtn" onclick="showView('history')">History</button>
     <button class="nbtn" onclick="showView('add')" style="background:#8B6220;color:#fff;border-color:#8B6220">+ Add</button>
   </div>
 </div>
@@ -109,7 +129,7 @@ textarea.field{resize:vertical;line-height:1.5}
 
 <!-- SCHEDULE -->
 <div id="view-schedule" class="page" style="max-width:1100px">
-  <p class="plabel">Week of May 25–31, 2026</p>
+  <p class="plabel">Week of July 6-12, 2026</p>
   <h1 class="ptitle">BOH Schedule</h1>
   <div style="background:#FDF9F3;border:1px solid #E8D5A3;border-radius:7px;padding:10px 13px;font-size:17px;color:#8B6914;margin-bottom:14px">
     <strong>Legend:</strong>
@@ -123,7 +143,7 @@ textarea.field{resize:vertical;line-height:1.5}
 
 <!-- STATIONS -->
 <div id="view-stations" class="page">
-  <p class="plabel">Week of May 25–31, 2026</p>
+  <p class="plabel">Week of July 6-12, 2026</p>
   <h1 class="ptitle">Stations</h1>
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px" id="st-btns"></div>
   <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px" id="day-btns"></div>
@@ -184,28 +204,42 @@ textarea.field{resize:vertical;line-height:1.5}
       <button onclick="addCustomAction()" style="background:#8B6220;border:none;border-radius:6px;padding:7px 12px;color:#fff;font-size:17px;white-space:nowrap">+ Add</button>
     </div>
   </div>
-  <div class="card"><div class="stitle" style="margin-top:0">📝 Notes</div><textarea class="field" id="act-notes" rows="3" placeholder="General notes for this day..." oninput="saveActNotes()"></textarea></div>
+  <div class="card"><div class="stitle" style="margin-top:0">📝 Notes & Photos</div>
+    <textarea class="field" id="act-notes" rows="3" placeholder="General notes for this day..." oninput="saveActNotes()"></textarea>
+    <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+      <label class="photo-add-btn" for="act-photo-input">📷 Add Photos</label>
+      <input type="file" id="act-photo-input" accept="image/*" multiple style="display:none" onchange="addActPhotos(this.files);this.value=''"/>
+      <span style="font-size:13px;color:#888">Photos stored on this device (auto-compressed)</span>
+    </div>
+    <div id="act-photos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px"></div>
+  </div>
 </div>
 
-<!-- CHART -->
-<div id="view-chart" class="page">
-  <p class="plabel">Performance</p>
-  <h1 class="ptitle">Productivity Chart</h1>
-  <div style="background:#FDF9F3;border:1px solid #E8D5A3;border-radius:7px;padding:9px 13px;margin-bottom:12px;font-size:16px;color:#8B6914;line-height:1.8">
-    <strong>Score formula :</strong>
-    Line stations (Grill, Salad, Middle, Dumplings, Dishwasher, Deep Cleaning) : <strong>Protocol 55% + Production 45%</strong>
-    &nbsp;|&nbsp;
-    Prep / AM : <strong>Protocol 30% + Production 70%</strong>
+<!-- REPORT -->
+<div id="view-report" class="page" style="max-width:880px">
+  <p class="plabel">Reporting — Lapis BOH</p>
+  <h1 class="ptitle">Activity Report</h1>
+  <div id="rep-controls" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+    <button class="mbtn active" id="rep-daily-btn" onclick="setRepMode('daily')">📅 Daily</button>
+    <button class="mbtn" id="rep-weekly-btn" onclick="setRepMode('weekly')">🗓️ Weekly</button>
+    <button class="mbtn" onclick="sendReportEmail()" style="margin-left:auto;background:#2980B9;color:#fff;border-color:#2980B9">📧 Send by Email</button>
+    <button class="mbtn" onclick="changeReportEmail()" title="Change recipient" style="background:#fff;color:#2980B9;border-color:#2980B9">✏️</button>
+    <button class="mbtn" onclick="window.print()" style="background:#27AE60;color:#fff;border-color:#27AE60">🖨️ Print / PDF</button>
   </div>
-  <div style="display:flex;gap:5px;margin-bottom:12px">
-    <button class="mbtn active" onclick="setMetric('overall',this)">Overall</button>
-    <button class="mbtn" onclick="setMetric('protocol',this)">Protocol</button>
-    <button class="mbtn" onclick="setMetric('production',this)">Production</button>
+  <div id="rep-day-btns" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px"></div>
+  <div id="report-content"></div>
+</div>
+
+<!-- HISTORY -->
+<div id="view-history" class="page" style="max-width:880px">
+  <p class="plabel">History — Protocol &amp; Waste</p>
+  <h1 class="ptitle">Daily Log History</h1>
+  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+    <select class="field" id="hist-st" style="max-width:200px" onchange="renderHistory()"></select>
+    <span style="font-size:14px;color:#888">Week of July 6-12, 2026</span>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px" id="chart-sum"></div>
-  <div class="card" id="chart-bars" style="margin-bottom:12px"></div>
-  <div style="font-size:16px;color:#333;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid #EEE;padding-bottom:4px">Station Averages</div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:7px" id="st-avgs"></div>
+  <div id="hist-day-btns" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px"></div>
+  <div id="history-content"></div>
 </div>
 
 <!-- ADD -->
@@ -260,7 +294,7 @@ textarea.field{resize:vertical;line-height:1.5}
 const SB_URL="https://dqqxpbkbnjtovkbsqvlu.supabase.co";
 const SB_KEY="sb_publishable_v7PhVmtWDY0CTc9lLLBJTg_QL9vPWAv";
 const SB_H={apikey:SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
-const WEEK_LABEL="May 25-31 2026";
+const WEEK_LABEL="July 6-12 2026";
 function showSaved(){const b=document.getElementById('save-badge');b.style.opacity='1';setTimeout(()=>b.style.opacity='0',1400);}
 function save(k,v){try{localStorage.setItem('lapis_'+k,JSON.stringify(v));}catch(e){}}
 function load(k,d){try{const v=localStorage.getItem('lapis_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
@@ -317,13 +351,13 @@ const ST={
   "Deep Cleaning":{target:1,unit:"session",color:"#7F8C8D"},
 };
 const WEEK=[
-  {short:"Mon",full:"Monday May 25"},
-  {short:"Tue",full:"Tuesday May 26"},
-  {short:"Wed",full:"Wednesday May 27"},
-  {short:"Thu",full:"Thursday May 28"},
-  {short:"Fri",full:"Friday May 29"},
-  {short:"Sat",full:"Saturday May 30"},
-  {short:"Sun",full:"Sunday May 31"},
+  {short:"Mon",full:"Monday July 6"},
+  {short:"Tue",full:"Tuesday July 7"},
+  {short:"Wed",full:"Wednesday July 8"},
+  {short:"Thu",full:"Thursday July 9"},
+  {short:"Fri",full:"Friday July 10"},
+  {short:"Sat",full:"Saturday July 11"},
+  {short:"Sun",full:"Sunday July 12"},
 ];
 const PROD_ITEMS={
   "Dumplings":[
@@ -507,6 +541,9 @@ const PROTO={
     "CLOSING: Clean all spice and oil containers",
     "CLOSING: Leftover rice labeled, dated, placed in cooler",
     "CLOSING: All kabob meats marinated in own container, labeled, dated for next day",
+    "Sanitizer bucket/spray set up — solution changed every 4h",
+    "Any utensil dropped on the floor → washed before reuse",
+    "No cross-contamination: raw/cooked separated, dedicated boards & utensils, hands washed between tasks"
   ],
   "Middle Line":[
     "OPENING: Family dinner ready at 4:30pm",
@@ -527,6 +564,9 @@ const PROTO={
     "CLOSING: Pull out stove top, clean and change aluminum",
     "CLOSING: Clean inside of oven and racks",
     "CLOSING: Clean around deep fryer — remove food from oil and cover",
+    "Sanitizer bucket/spray set up — solution changed every 4h",
+    "Any utensil dropped on the floor → washed before reuse",
+    "No cross-contamination: raw/cooked separated, dedicated boards & utensils, hands washed between tasks"
   ],
   "Salad":[
     "OPENING: Check freezer — enough bolanees and dumplings (use old date first)",
@@ -549,6 +589,9 @@ const PROTO={
     "CLOSING: Clean stove tops and oven — change aluminum",
     "CLOSING: Clean screen with clean towel — back wires with Clorox wipes",
     "CLOSING: Clean and wipe dumpling freezer and electric burners",
+    "Sanitizer bucket/spray set up — solution changed every 4h",
+    "Any utensil dropped on the floor → washed before reuse",
+    "No cross-contamination: raw/cooked separated, dedicated boards & utensils, hands washed between tasks"
   ],
   "Dumplings":[
     "OPENING: Check freezer — enough bolanees and dumplings (use old date first)",
@@ -568,6 +611,9 @@ const PROTO={
     "CLOSING: Clean stove tops and oven — change aluminum",
     "CLOSING: Clean screen with clean towel — back wires with Clorox wipes",
     "CLOSING: Clean and wipe dumpling freezer and electric burners",
+    "Sanitizer bucket/spray set up — solution changed every 4h",
+    "Any utensil dropped on the floor → washed before reuse",
+    "No cross-contamination: raw/cooked separated, dedicated boards & utensils, hands washed between tasks"
   ],
   "Prep / AM":[
     // ── Opening / Hygiene
@@ -645,6 +691,9 @@ const PROTO={
     "All dishes labeled with name, date, and quantity",
     "HACCP cooling log filled — temperature checked at start and end",
     "Station cleaned, tools stored, surfaces sanitized at end of shift",
+    "Sanitizer bucket/spray set up — solution changed every 4h",
+    "Any utensil dropped on the floor → washed before reuse",
+    "No cross-contamination: raw/cooked separated, dedicated boards & utensils, hands washed between tasks"
   ],
   "Dishwasher":[
     "Dishwasher machine temperature and chemical levels checked",
@@ -657,6 +706,9 @@ const PROTO={
     "Floor swept and mopped under all stations",
     "Handwashing station stocked (soap + paper towels)",
     "Red sanitation bucket stocked and placed correctly",
+    "Sanitizer bucket/spray set up — solution changed every 4h",
+    "Any utensil dropped on the floor → washed before reuse",
+    "No cross-contamination: raw/cooked separated, dedicated boards & utensils, hands washed between tasks"
   ],
   "Deep Cleaning":[
     "Fryer oil changed and fryer cleaned thoroughly",
@@ -668,6 +720,9 @@ const PROTO={
     "All non-visible areas cleaned (under equipment, shelves, walls)",
     "Proper cleaning products used — no cross-use",
     "Deep clean checklist signed off by supervisor",
+    "Sanitizer bucket/spray set up — solution changed every 4h",
+    "Any utensil dropped on the floor → washed before reuse",
+    "No cross-contamination: raw/cooked separated, dedicated boards & utensils, hands washed between tasks"
   ],
 };
 const FRIDGE_ITEMS=[
@@ -707,46 +762,44 @@ const TRANSFER_WINDOWS=[
 // ── SCHEDULE DATA ─────────────────────────────────────────────────────────────
 const SCHEDULE_GROUPS=[
   {name:"🔥 Grill Team",rows:[
-    {name:"Santos, Jose",role:"Grill (Tue/Wed/Fri)·Mon/Thu lines",tasks:["3:30–11:30","2pm–11:30","2pm–11:30","3:30–11:30","2pm–11:30","Off","Off"]},
-    {name:"Bonilla, Ignacio",role:"Grill station",tasks:["2pm–11:30","Off","Off","2pm–11:30","Off","1pm–12:30","2pm–11:30"]},
+    {name:"Santos, Jose",role:"Grill (Tue/Wed/Fri)·Mon/Thu lines",tasks:["3pm–11:30pm","2pm–12:30am","2pm–12:30am","3pm–12am","2pm–12:30am","Off","Off"]},
+    {name:"Bonilla, Ignacio",role:"Grill station",tasks:["2pm–11:30pm","Off","Off","2pm–11:30pm","Off","1pm–11:30pm","2pm–11:30pm"]},
     {name:"Ventura, Rodolfo",role:"Lunch all stations·Sat/Sun brunch grill",tasks:["7am–3pm","Off","Off","7am–3pm","7am–3pm","8am–4pm","8am–4pm"]},
   ]},
   {name:"🥗 Salad / Middle Station",rows:[
-    {name:"Gricelda (Liza)",role:"Salad station",tasks:["Off","3:30–11:30","3:30–11:30","3:30–11:30","Off","8am–5pm","8am–5pm"]},
-    {name:"Roads, Rebecca",role:"Salad station",tasks:["3:30–11:30","3:30–11:30","3:30–11:30","Off","Off","3:30–11:30","Off"]},
-    {name:"Espinoza, Alan",role:"Middle station",tasks:["Off","Off","Off","3:30–11:30","3:30–11:30","3:30–11:30","3:30–11:30"]},
-    {name:"Pineda, Dorian",role:"Salad / Middle",tasks:["Off","Off","3:30–11:30","Off","3:30–11:30","3:30–11:30","3:30–11:30"]},
-    {name:"Santos, Cindy",role:"Salad / Middle · Barista",tasks:["Barista","3:30–11:30","Off","Off","3:30–11:30","Off","Off"]},
-    {name:"Gabriel Martinez",role:"Mon salad·Wed lunch·Fri salad·Sat/Sun middle",tasks:["3:30–11:30","Off","9am–4pm","Off","8am–4pm","8am–4pm","8am–4pm"]},
-    {name:"Merino, Dolores",role:"Inventories·helping salad",tasks:["3:30–10pm","Off","10am–5pm","Off","2pm–10pm","9am/4pm","9am/4pm"]},
-    {name:"Gonzales, Cristian",role:"Mon/Tue onions·Wed–Fri salad",tasks:["7am–3pm","7am–3pm","3:30–11:30","3:30–11:30","3:30–11:30","Off","Off"]},
+    {name:"Gricelda Martinez (Liza)",role:"Salad station",tasks:["Off","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm","Off","8am–5pm","8am–5pm"]},
+    {name:"Roads, Rebecca",role:"Salad station",tasks:["3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm","Off","Off","3:30pm–11:30pm","3:30pm–11:30pm"]},
+    {name:"Pineda, Dorian",role:"Salad / Middle station",tasks:["Off","Off","3:30pm–11:30pm","Off","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm"]},
+    {name:"Santos, Cindy",role:"Salad / Middle·Barista",tasks:["Off","3:30pm–11:30pm","Off","Off","3:30pm–11:30pm","Off","Off"]},
+    {name:"Gonzales, Cristian",role:"Mon/Tue onions·Wed–Fri salad",tasks:["8am–2pm","7am–3:30pm","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm","Off","Off"]},
+    {name:"Gabriel Martinez",role:"Mon salad·Wed lunch·Fri salad·Sat/Sun middle",tasks:["3:30pm–11:30pm","Off","9am–4pm","Off","8am–4pm","8am–4pm","8am–4pm"]},
+    {name:"Merino, Dolores",role:"Inventories·helping salad Fri–Sun",tasks:["3:30pm–11pm","Off","9am–6pm","Off","3:30pm–11pm","9am–11pm","9am–11pm"]},
+    {name:"Yesenia, N Lopez",role:"Line Cook",tasks:["Off","Off","8am–3pm","8am–3pm","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm"]},
   ]},
   {name:"🥣 Prep / AM Team",rows:[
     {name:"Loaeza, Liliana",role:"Main AM cook",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
-    {name:"Bustillo, Carman",role:"Prep / bagging food",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
-    {name:"Beltrand, Sutapa",role:"Prep bolani beef",tasks:["7am–2pm","7am–2pm","7am–2pm","Off","Off","Off","Off"]},
-    {name:"Ayite, Anani",role:"Cutting all meats",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
     {name:"Antunez, Cristian",role:"Cooking all sauces / prep red chutney",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
-    {name:"Natren, Dalila",role:"Prep bolani potato / leek",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"]},
-    {name:"Machuca, Edith",role:"Prep dumplings",tasks:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
     {name:"Ayala, Orbelina",role:"AM cook / prep",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
-    {name:"Campos, Ana",role:"Dumplings / orange cake",tasks:["7am–3pm","Off","Off","7am–3pm","7am–3pm","Cake","Off"]},
-    {name:"Daniela Romero",role:"Dumplings",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Natren, Dalila",role:"Prep bolani potato / leek",tasks:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Beltrand, Sutapa",role:"Prep bolani beef",tasks:["6am–2pm","6am–2pm","6am–2pm","Off","Off","Off","Off"]},
     {name:"Verde, M Bessy",role:"Prep cook",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"]},
     {name:"Jacobo, Maria",role:"Prep cook",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
-    {name:"Azizi, Haroon",role:"Baker / prep sambossas / peeling pumpkins",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
     {name:"Agh Mohamed",role:"Baker / prep sambossas / peeling pumpkins",tasks:["7am–3pm","Off","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Bustillo, Carman",role:"Prep / bagging food",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Ayite, Anani",role:"Cutting all meats",tasks:["7am–3pm","7am–3pm","7am–3pm","Off","Off","Off","Off"]},
+    {name:"Machuca, Edith (Roxanna)",role:"Prep dumplings",tasks:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Campos, Ana",role:"Dumplings / orange cake",tasks:["7am–3pm","Off","Off","7am–3pm","7am–3pm","7am–3pm","Off"]},
+    {name:"Daniela Romero",role:"Dumplings",tasks:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"]},
+    {name:"Marien P Gbetingan",role:"Shopping",tasks:["Off","7am–4pm","Off","Off","7am–4pm","7am–4pm","Off"]},
   ]},
   {name:"🫧 Dishwashers / Cleaning",rows:[
-    {name:"Flores, William",role:"4pm–2am dishwasher",tasks:["4pm–12:30","4pm–12:30","Off","Off","4pm–2am","Off","4am–1am"]},
-    {name:"Bislao, Abalo",role:"Dining rooms·fryer·oven·windows·1819·Olivier",tasks:["Off","7am–3pm","7am–3pm","Off","7am–3pm","8am–6pm","Off"]},
-    {name:"Martin Hernandez",role:"Dining room cleaning",tasks:["Off","Off","Off","Off","6am–1am","8am–9pm","6am–6pm"]},
-    {name:"Hounsounou (Cocou)",role:"Tue/Fri dining rooms·fryer·oven·windows·1819",tasks:["Off","7am–2pm","4am–1am","Off","7am–3pm","6am–2am","Off"]},
-    {name:"Rocha, Oscar",role:"Dining room cleaning",tasks:["8am–4pm","Off","8am–4pm","Off","8am–4pm","8am–3pm","Off"]},
-    {name:"Tovihlon, Komi",role:"Dishwasher",tasks:["4pm–11:30","4pm–11:30","4am–1am","4am–1am","1pm–8pm","Off","Off"]},
-    {name:"Lucien (Fadel)",role:"Dishwasher·shopping with Olivier",tasks:["7am–4pm","7am–4pm","Off","Off","7am–4pm","Off","Off"]},
+    {name:"Flores, William",role:"4pm–2am dishwasher",tasks:["4pm–12:30am","4pm–12:30am","Off","Off","4pm–1am","Off","4pm–1am"]},
+    {name:"Hounsounou, Justin (Cocou)",role:"Tue/Fri dining rooms·fryer·oven·windows·1819",tasks:["Off","6am–3pm","4pm–1am","Off","7am–4pm","4pm–1am","Off"]},
+    {name:"Rocha, Oscar",role:"Dining room cleaning",tasks:["8am–4pm","Off","8am–4pm","Off","8am–4pm","Off","Off"]},
+    {name:"Tovihlon, Komi",role:"Dishwasher",tasks:["4pm–12:30am","4pm–12:30am","4pm–9pm","4pm–12:30am","Off","8am–5pm","Off"]},
+    {name:"Lucien Housessou (Fadel)",role:"Dishwasher·shopping with Olivier",tasks:["7am–4pm","7am–4pm","Off","Off","7am–4pm","Off","Off"]},
     {name:"Miranda, Marlon",role:"Dishwasher",tasks:["8am–4pm","Off","8am–4pm","8am–4pm","8am–4pm","Off","8am–4pm"]},
-    {name:"Fransisco, Juan",role:"Shopping / Dishwasher",tasks:["Off","8am–4pm","Off","4am–1am","Off","4pm–2am","4am–1am"]},
+    {name:"Fransisco, Juan",role:"Shopping / Dishwasher",tasks:["Off","6am–5pm","Off","4pm–1am","1pm–10pm","8am–6pm","Off"]},
   ]},
 ];
 
@@ -874,7 +927,7 @@ const DEFAULT_INV_ITEMS=[
 ];
 
 // ── EMPLOYEES ─────────────────────────────────────────────────────────────────
-const SCHED={1:["3:30–11:30","2pm–11:30","2pm–11:30","3:30–11:30","2pm–11:30","Off","Off"],2:["2pm–11:30","Off","Off","2pm–11:30","Off","1pm–12:30","2pm–11:30"],3:["7am–3pm","Off","Off","7am–3pm","7am–3pm","8am–4pm","8am–4pm"],4:["Off","3:30–11:30","3:30–11:30","3:30–11:30","Off","8am–5pm","8am–5pm"],5:["3:30–11:30","3:30–11:30","3:30–11:30","Off","Off","3:30–11:30","Off"],6:["Off","Off","3:30–11:30","Off","3:30–11:30","3:30–11:30","3:30–11:30"],7:["Barista","3:30–11:30","Off","Off","3:30–11:30","Off","Off"],8:["7am–3pm","7am–3pm","3:30–11:30","3:30–11:30","3:30–11:30","Off","Off"],9:["Off","Off","Off","3:30–11:30","3:30–11:30","3:30–11:30","3:30–11:30"],10:["3:30–11:30","Off","9am–4pm","Off","8am–4pm","8am–4pm","8am–4pm"],11:["3:30–10pm","Off","10am–5pm","Off","2pm–10pm","9am/4pm","9am/4pm"],12:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],13:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],14:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],15:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],16:["7am–2pm","7am–2pm","7am–2pm","Off","Off","Off","Off"],17:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],18:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],19:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],20:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],21:["7am–3pm","Off","7am–3pm","7am–3pm","7am–3pm","Off","Off"],22:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],23:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],24:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],25:["7am–3pm","Off","Off","7am–3pm","7am–3pm","Cake","Off"],26:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],27:["4pm–12:30","4pm–12:30","Off","Off","4pm–2am","Off","4am–1am"],28:["Off","7am–3pm","7am–3pm","Off","7am–3pm","8am–6pm","Off"],29:["Off","Off","Off","Off","6am–1am","8am–9pm","6am–6pm"],30:["Off","7am–2pm","4am–1am","Off","7am–3pm","6am–2am","Off"],31:["8am–4pm","Off","8am–4pm","Off","8am–4pm","8am–3pm","Off"],32:["4pm–11:30","4pm–11:30","4am–1am","4am–1am","1pm–8pm","Off","Off"],33:["7am–4pm","7am–4pm","Off","Off","7am–4pm","Off","Off"],34:["8am–4pm","Off","8am–4pm","8am–4pm","8am–4pm","Off","8am–4pm"],35:["Off","8am–4pm","Off","4am–1am","Off","4pm–2am","4am–1am"]};
+const SCHED={1:["3pm–11:30pm","2pm–12:30am","2pm–12:30am","3pm–12am","2pm–12:30am","Off","Off"],2:["2pm–11:30pm","Off","Off","2pm–11:30pm","Off","1pm–11:30pm","2pm–11:30pm"],3:["7am–3pm","Off","Off","7am–3pm","7am–3pm","8am–4pm","8am–4pm"],4:["Off","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm","Off","8am–5pm","8am–5pm"],5:["3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm","Off","Off","3:30pm–11:30pm","3:30pm–11:30pm"],6:["Off","Off","3:30pm–11:30pm","Off","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm"],7:["Off","3:30pm–11:30pm","Off","Off","3:30pm–11:30pm","Off","Off"],8:["8am–2pm","7am–3:30pm","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm","Off","Off"],10:["3:30pm–11:30pm","Off","9am–4pm","Off","8am–4pm","8am–4pm","8am–4pm"],11:["3:30pm–11pm","Off","9am–6pm","Off","3:30pm–11pm","9am–11pm","9am–11pm"],12:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],13:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],14:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],15:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],16:["6am–2pm","6am–2pm","6am–2pm","Off","Off","Off","Off"],17:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off","Off"],19:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],21:["7am–3pm","Off","7am–3pm","7am–3pm","7am–3pm","Off","Off"],22:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],23:["7am–3pm","7am–3pm","7am–3pm","Off","Off","Off","Off"],24:["Off","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],25:["7am–3pm","Off","Off","7am–3pm","7am–3pm","7am–3pm","Off"],26:["7am–3pm","7am–3pm","7am–3pm","7am–3pm","7am–3pm","Off","Off"],27:["4pm–12:30am","4pm–12:30am","Off","Off","4pm–1am","Off","4pm–1am"],30:["Off","6am–3pm","4pm–1am","Off","7am–4pm","4pm–1am","Off"],31:["8am–4pm","Off","8am–4pm","Off","8am–4pm","Off","Off"],32:["4pm–12:30am","4pm–12:30am","4pm–9pm","4pm–12:30am","Off","8am–5pm","Off"],33:["7am–4pm","7am–4pm","Off","Off","7am–4pm","Off","Off"],34:["8am–4pm","Off","8am–4pm","8am–4pm","8am–4pm","Off","8am–4pm"],35:["Off","6am–5pm","Off","4pm–1am","1pm–10pm","8am–6pm","Off"],37:["Off","Off","8am–3pm","8am–3pm","3:30pm–11:30pm","3:30pm–11:30pm","3:30pm–11:30pm"],38:["Off","7am–4pm","Off","Off","7am–4pm","7am–4pm","Off"]};
 
 let emps=load('emps2',[
   {id:1,name:"Santos, Jose",st:"Grill",sh:"PM",role:"Grill (Tue/Wed/Fri)·Mon/Thu lines",note:"Night Line / 1819"},
@@ -885,7 +938,6 @@ let emps=load('emps2',[
   {id:6,name:"Pineda, Dorian",st:"Salad",sh:"PM",role:"Salad / Middle station",note:""},
   {id:7,name:"Santos, Cindy",st:"Salad",sh:"PM",role:"Salad / Middle·Barista",note:""},
   {id:8,name:"Gonzales, Cristian",st:"Salad",sh:"AM",role:"Mon/Tue onions·Wed–Fri salad",note:""},
-  {id:9,name:"Espinoza, Alan",st:"Middle Line",sh:"PM",role:"Middle station",note:""},
   {id:10,name:"Gabriel Martinez",st:"Middle Line",sh:"PM",role:"Mon salad·Wed lunch·Fri salad·Sat/Sun middle",note:""},
   {id:11,name:"Merino, Dolores",st:"Middle Line",sh:"PM",role:"Inventories·helping salad Fri–Sun",note:"AM Shifts lead"},
   {id:12,name:"Loaeza, Liliana",st:"Prep / AM",sh:"AM",role:"Main AM cook",note:""},
@@ -894,9 +946,7 @@ let emps=load('emps2',[
   {id:15,name:"Natren, Dalila",st:"Prep / AM",sh:"AM",role:"Prep bolani potato / leek",note:""},
   {id:16,name:"Beltrand, Sutapa",st:"Prep / AM",sh:"AM",role:"Prep bolani beef",note:"Mon–Wed only"},
   {id:17,name:"Verde, M Bessy",st:"Prep / AM",sh:"AM",role:"Prep cook",note:""},
-  {id:18,name:"Chavarria, Camila",st:"Prep / AM",sh:"AM",role:"Prep bolani pumpkin / sambossa spinach",note:""},
   {id:19,name:"Jacobo, Maria",st:"Prep / AM",sh:"AM",role:"Prep cook",note:""},
-  {id:20,name:"Azizi, Haroon",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",note:""},
   {id:21,name:"Agh Mohamed",st:"Prep / AM",sh:"AM",role:"Baker / prep sambossas / peeling pumpkins",note:""},
   {id:22,name:"Bustillo, Carman",st:"Prep / AM",sh:"AM",role:"Prep / bagging food",note:""},
   {id:23,name:"Ayite, Anani",st:"Prep / AM",sh:"AM",role:"Cutting all meats",note:"Fri 10am Meat Team"},
@@ -904,29 +954,31 @@ let emps=load('emps2',[
   {id:25,name:"Campos, Ana",st:"Dumplings",sh:"AM",role:"Dumplings / orange cake",note:""},
   {id:26,name:"Daniela Romero",st:"Dumplings",sh:"AM",role:"Dumplings",note:""},
   {id:27,name:"Flores, William",st:"Dishwasher",sh:"PM",role:"4pm–2am dishwasher",note:""},
-  {id:28,name:"Bislao, Abalo",st:"Deep Cleaning",sh:"AM",role:"Dining rooms·fryer·oven·windows·1819·shopping with Olivier",note:""},
-  {id:29,name:"Martin Hernandez",st:"Deep Cleaning",sh:"AM",role:"Dining room cleaning",note:"Sat/Sun"},
   {id:30,name:"Hounsounou, Justin (Cocou)",st:"Dishwasher",sh:"PM",role:"Tue/Fri dining rooms·fryer·oven·windows·1819",note:""},
   {id:31,name:"Rocha, Oscar",st:"Deep Cleaning",sh:"PM",role:"Dining room cleaning",note:""},
   {id:32,name:"Tovihlon, Komi",st:"Dishwasher",sh:"PM",role:"Dishwasher",note:""},
   {id:33,name:"Lucien Housessou (Fadel)",st:"Dishwasher",sh:"AM",role:"Dishwasher·shopping with Olivier",note:""},
   {id:34,name:"Miranda, Marlon",st:"Dishwasher",sh:"PM",role:"Dishwasher",note:""},
   {id:35,name:"Fransisco, Juan",st:"Dishwasher",sh:"AM",role:"Shopping / Dishwasher",note:""},
+  {id:37,name:"Yesenia, N Lopez",st:"Salad",sh:"PM",role:"Line Cook",note:""},
+  {id:38,name:"Marien P Gbetingan",st:"Prep / AM",sh:"AM",role:"Shopping",note:""},
 ]);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let curSt=load('curSt2',"Dumplings"),curDay=load('curDay2',0),curEmpId=null,curProfDay=0,curMetric="overall";
+let curSt=load('curSt2',"Dumplings"),curDay=load('curDay2',0),curEmpId=null,curProfDay=0;
 let curActDay=load('curActDay2',0),curDelDay=load('curDelDay2',0);
 let curInvLoc=load('curInvLoc','kitchen'),curInvCat=load('curInvCat','vegetables'),curInvDay=load('curInvDay',0);
 
 function makeDay(e,di){const sc=SCHED[e.id]?.[di]||"Off";const w=sc!=="Off"&&sc!=="Barista"&&sc!=="Cake";return{sched:sc,prodItems:(PROD_ITEMS[e.st]||[]).map(()=>null),protocol:(PROTO[e.st]||[]).map(()=>false),waste:(WASTE_ITEMS[e.st]||[]).map(()=>""),remarks:"",working:w};}
 let SD=load('SD2',null);
 if(!SD){SD={};emps.forEach(e=>{SD[e.id]=WEEK.map((_,di)=>makeDay(e,di));});}
-emps.forEach(e=>{if(!SD[e.id])SD[e.id]=WEEK.map((_,di)=>makeDay(e,di));WEEK.forEach((_,di)=>{if(!SD[e.id][di])SD[e.id][di]=makeDay(e,di);if(!SD[e.id][di].waste)SD[e.id][di].waste=(WASTE_ITEMS[e.st]||[]).map(()=>"");if(!SD[e.id][di].prodItems)SD[e.id][di].prodItems=(PROD_ITEMS[e.st]||[]).map(()=>null);});});
+emps.forEach(e=>{if(!SD[e.id])SD[e.id]=WEEK.map((_,di)=>makeDay(e,di));WEEK.forEach((_,di)=>{if(!SD[e.id][di])SD[e.id][di]=makeDay(e,di);if(!SD[e.id][di].waste)SD[e.id][di].waste=(WASTE_ITEMS[e.st]||[]).map(()=>"");if(!SD[e.id][di].prodItems)SD[e.id][di].prodItems=(PROD_ITEMS[e.st]||[]).map(()=>null);const sc=SCHED[e.id]?.[di]||"Off";SD[e.id][di].sched=sc;SD[e.id][di].working=sc!=="Off"&&sc!=="Barista"&&sc!=="Cake";});});
 
 let ACT_FRIDGE=load('ACT_FRIDGE3',WEEK.map(()=>Object.fromEntries(FRIDGE_ITEMS.map(f=>[f.id,false]))));
 let ACT_CUSTOM=load('ACT_CUSTOM2',WEEK.map(()=>[]));
 let ACT_NOTES=load('ACT_NOTES2',WEEK.map(()=>""));
+let ACT_PHOTOS=load('ACT_PHOTOS',WEEK.map(()=>[]));
+let REM_PHOTOS=load('REM_PHOTOS',{}); // photos des remarques: clé "empId_jour" 
 let ACTION_TEMPLATES=load('ACTION_TEMPLATES2',[]);
 let DEL=load('DEL2',WEEK.map(()=>({deliveries:[]})));
 
@@ -939,7 +991,7 @@ let INV_DAY=load('INV_DAY',WEEK.map(()=>({})));
 function saveAll(){
   save('emps2',emps);save('SD2',SD);save('curSt2',curSt);save('curDay2',curDay);
   save('curActDay2',curActDay);save('curDelDay2',curDelDay);
-  save('ACT_FRIDGE2',ACT_FRIDGE);save('ACT_CUSTOM2',ACT_CUSTOM);save('ACT_NOTES2',ACT_NOTES);
+  save('ACT_FRIDGE2',ACT_FRIDGE);save('ACT_CUSTOM2',ACT_CUSTOM);save('ACT_NOTES2',ACT_NOTES);save('ACT_PHOTOS',ACT_PHOTOS);save('REM_PHOTOS',REM_PHOTOS);
   save('ACTION_TEMPLATES2',ACTION_TEMPLATES);save('DEL2',DEL);
   save('INV_ITEMS',INV_ITEMS);save('INV_DAY',INV_DAY);
   save('curInvLoc',curInvLoc);save('curInvCat',curInvCat);save('curInvDay',curInvDay);
@@ -986,17 +1038,10 @@ function empProt(id){
   });
   return totalApplicable>0?Math.round((totalDone/totalApplicable)*100):0;
 }
-function empProd(id){const e=emps.find(x=>x.id===id);if(!e)return 0;const items=PROD_ITEMS[e.st]||[];if(!items.length)return 0;const w=SD[id]?.filter(d=>d.working&&d.prodItems&&d.prodItems.some(v=>v!==null&&v!=="na"))||[];if(!w.length)return 0;const scores=w.map(d=>{const ent=items.map((item,i)=>prodAppliesTo(e.st,item.label,e)&&d.prodItems[i]!==null&&d.prodItems[i]!=="na"?Math.min((Number(d.prodItems[i])/item.target)*100,150):null).filter(v=>v!==null);return ent.length?ent.reduce((a,s)=>a+s,0)/ent.length:0;});return Math.min(Math.round(scores.reduce((a,s)=>a+s,0)/scores.length),150);}
+function empProd(id){return 0;}
 function empOverall(id){
   const e=emps.find(x=>x.id===id);if(!e)return 0;
-  const prot=empProt(id);
-  const prod=Math.min(empProd(id),100);
-  // Prep/AM: Protocol 30% + Production 70%
-  // Line stations: Protocol 55% + Production 45%
-  if(e.st==='Prep / AM'){
-    return Math.round((prot*0.30)+(prod*0.70));
-  }
-  return Math.round((prot*0.55)+(prod*0.45));
+  return empProt(id);
 }
 function sc(s){return s>=80?"#27AE60":s>=55?"#E67E22":"#E74C3C";}
 
@@ -1005,7 +1050,7 @@ function showView(v){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
-  const m={staff:'Staff',schedule:'Schedule',stations:'Stations',delivery:'Delivery',inventory:'Inventory',actions:'Actions',chart:'Chart',add:'+ Add',profile:'Stations'};
+  const m={staff:'Staff',schedule:'Schedule',stations:'Stations',delivery:'Delivery',inventory:'Inventory',actions:'Actions',report:'Report',history:'History',add:'+ Add',profile:'Stations'};
   document.querySelectorAll('.nbtn').forEach(b=>{if(b.textContent.trim()===m[v])b.classList.add('active');});
   if(v==='staff')renderStaff();
   if(v==='schedule')renderSchedule();
@@ -1013,8 +1058,9 @@ function showView(v){
   if(v==='delivery')renderDelivery();
   if(v==='inventory')renderInventory();
   if(v==='actions')renderActions();
-  if(v==='chart')renderChart();
-  if(v==='add')renderAdd();
+    if(v==='report')renderReport();
+    if(v==='history')renderHistory();
+    if(v==='add')renderAdd();
 }
 
 // ── STAFF ─────────────────────────────────────────────────────────────────────
@@ -1026,10 +1072,8 @@ function renderStaff(){
   const fst=document.getElementById('fst')?.value||'All';
   const f=emps.filter(e=>(fs==='All'||e.sh===fs)&&(fst==='All'||e.st===fst)&&(e.name.toLowerCase().includes(s)||e.st.toLowerCase().includes(s)||e.role.toLowerCase().includes(s)));
   document.getElementById('staff-grid').innerHTML=f.map(e=>{
-    const ov=empOverall(e.id),pr=empProd(e.id),pt=empProt(e.id);
+    const ov=empOverall(e.id),pt=empProt(e.id);
     const stc=ST[e.st]||{color:'#222',target:0,unit:''};
-    const wd=SD[e.id]?.filter(d=>d.working&&d.produced!==null)||[];
-    const avg=wd.length?Math.round(wd.reduce((a,d)=>a+Number(d.produced),0)/wd.length):null;
     return `<div class="ecard" onclick="openProfFromStaff(${e.id})" style="border-left:4px solid ${stc.color}">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
         <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
@@ -1037,8 +1081,7 @@ function renderStaff(){
         <div style="text-align:right;flex-shrink:0;margin-left:7px"><div style="font-size:21px;font-weight:bold;color:${sc(ov)}">${ov}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:7px;color:#444">OVERALL</div></div>
       </div>
       <div style="font-size:16px;color:#333;margin-bottom:5px">${e.role}</div>
-      ${avg!==null?`<div style="font-size:16px;color:#333;margin-bottom:5px">Avg: <strong style="color:${sc(Math.min(pr,100))}">${avg}/${stc.target} ${stc.unit}</strong></div>`:''}
-      ${([['Protocol '+(e.st==='Prep / AM'?'30':'55')+'%',pt],['Production '+(e.st==='Prep / AM'?'70':'45')+'%',Math.min(pr,100)]]).map(([l,v])=>`<div style="margin-bottom:3px"><div style="display:flex;justify-content:space-between;font-size:15px;color:#333;margin-bottom:2px"><span>${l}</span><span style="color:${sc(v)}">${v}%</span></div><div class="pbar"><div class="pfill" style="width:${v}%;background:${sc(v)}"></div></div></div>`).join('')}
+      <div style="margin-bottom:3px"><div style="display:flex;justify-content:space-between;font-size:15px;color:#333;margin-bottom:2px"><span>Protocol</span><span style="color:${sc(pt)}">${pt}%</span></div><div class="pbar"><div class="pfill" style="width:${pt}%;background:${sc(pt)}"></div></div></div>
     </div>`;
   }).join('');
 }
@@ -1065,7 +1108,7 @@ function renderStations(){
   const sc2=ST[curSt]?.color||'#888';
   document.getElementById('day-btns').innerHTML=WEEK.map((w,i)=>{const a=i===curDay;const wk=emps.filter(e=>e.st===curSt&&SCHED[e.id]?.[i]&&SCHED[e.id][i]!=="Off");const ent=wk.filter(e=>SD[e.id]?.[i]?.produced!==null).length;return `<button class="daybtn${a?' active':''}" onclick="selDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div><div style="font-size:16px;margin-top:2px;color:${a?'rgba(255,255,255,.9)':wk.length?'#27AE60':'#AAA'};font-weight:bold">${wk.length?wk.length+' staff':'Off'}</div>${wk.length&&ent?`<div style="font-size:15px;color:${a?'rgba(255,255,255,.7)':'#8B6220'}">${ent}/${wk.length} logged</div>`:''}</button>`;}).join('');
   const wt=emps.filter(e=>e.st===curSt&&SCHED[e.id]?.[curDay]&&SCHED[e.id][curDay]!=="Off");
-  document.getElementById('st-header').innerHTML=wt.length?`<div class="card" style="border-left:4px solid ${sc2};display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;padding:9px 12px"><div><div style="font-size:16px;font-weight:bold;color:${sc2}">${curSt} — ${WEEK[curDay].full}</div><div style="font-size:17px;color:#333;margin-top:1px">${wt.length} staff on shift · Target: ${ST[curSt].target} ${ST[curSt].unit}/person/day</div></div><div style="font-size:17px;color:#444">Tap an employee to log production, protocol & waste</div></div>`:
+  document.getElementById('st-header').innerHTML=wt.length?`<div class="card" style="border-left:4px solid ${sc2};display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;padding:9px 12px"><div><div style="font-size:16px;font-weight:bold;color:${sc2}">${curSt} — ${WEEK[curDay].full}</div><div style="font-size:17px;color:#333;margin-top:1px">${wt.length} staff on shift · Target: ${ST[curSt].target} ${ST[curSt].unit}/person/day</div></div><div style="font-size:17px;color:#444">Tap an employee to log protocol & waste</div></div>`:
   `<div style="padding:9px 12px;background:#F9F8F5;border:1px solid #E8E4DC;border-radius:8px;font-size:15px;color:#333">No <strong>${curSt}</strong> staff on ${WEEK[curDay].full}.</div>`;
   document.getElementById('emp-grid').innerHTML=wt.map(e=>{
     const day=SD[e.id]?.[curDay]||{};const tg=ST[e.st]?.target||1;const pItemsAll=PROD_ITEMS[e.st]||[];const dp=day.prodItems||[];
@@ -1081,11 +1124,6 @@ function renderStations(){
         <div style="font-size:16px;color:#333;margin:2px 0">${e.role}</div>
         <span style="font-size:16px;padding:2px 6px;border-radius:3px;background:${e.sh==='AM'?'#FDF9F3':'#F3F6FD'};color:${e.sh==='AM'?'#8B6914':'#1A4A8B'}">${day.sched}</span></div>
         <div style="text-align:right;flex-shrink:0;margin-left:7px"><div style="font-size:21px;font-weight:bold;color:${sc(ov)}">${ov}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:7px;color:#444">WEEKLY</div></div>
-      </div>
-      <div style="margin-bottom:6px;padding:6px 8px;background:${avgSc!==null?'#F9F8F5':'#FFF8F0'};border-radius:5px;border:1px solid ${avgSc!==null?'#EEE':'#F0D5B0'}">
-        <div style="display:flex;justify-content:space-between;font-size:16px;color:#333;margin-bottom:3px"><span>Production (${entProd.length}/${pList.length})</span>${avgSc!==null?`<span style="color:${sc(Math.min(avgSc,100))};font-weight:bold">${Math.min(avgSc,100)}%</span>`:`<span style="color:#E67E22;font-weight:bold">Not logged</span>`}</div>
-        ${avgSc!==null?`<div class="pbar"><div class="pfill" style="width:${Math.min(avgSc,100)}%;background:${avgSc>=100?'#27AE60':avgSc>=70?'#E67E22':'#E74C3C'}"></div></div>`:`<div style="font-size:16px;color:#8B6220">Tap to enter</div>`}
-        ${pList.slice(0,4).map(o=>{const item=o.item;const v=dp[o.i];const hv=v!==null&&v!==undefined;const p=hv&&v!=='na'?Math.min(Math.round((Number(v)/item.target)*100),150):null;const isNA3=v==='na';return '<div style="font-size:15px;color:#222;margin-top:2px;display:flex;justify-content:space-between"><span>'+item.label+'</span><span style="color:'+(isNA3?'#AAA':hv?sc(Math.min(p,100)):'#CCC')+';font-weight:bold;font-style:'+(isNA3?'italic':'normal')+'">'+(isNA3?'N/A':hv?v+'/'+item.target+' ('+p+'%)':'—')+'</span></div>';}).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:16px;color:#333;margin-bottom:2px"><span>Protocol (${pd}/${pdApplicable}${pdNA>0?" — "+pdNA+" N/A":""})</span><span style="color:${sc(pp)};font-weight:bold">${pp}%</span></div>
       <div class="pbar" style="margin-bottom:4px"><div class="pfill" style="width:${pp}%;background:${sc(pp)}"></div></div>
@@ -1108,7 +1146,7 @@ function renderProf(){
   const protoAll=PROTO[e.st]||[];const protoList=protoAll.map((text,i)=>({text,i})).filter(o=>itemAppliesTo(o.text,e));
   const stPV=(day.protocol||[]);const pdNA=protoList.filter(o=>stPV[o.i]==='na').length;const pdApplicable=protoList.length-pdNA;const pd=protoList.filter(o=>stPV[o.i]===true).length;const pp=pdApplicable>0?Math.round((pd/pdApplicable)*100):0;
   const wasteItems=WASTE_ITEMS[e.st]||[];
-  const ov=empOverall(e.id),wp=empProt(e.id),wpr=empProd(e.id);
+  const ov=empOverall(e.id),wp=empProt(e.id);
   const wdays=days.filter(d=>d.working&&d.prodItems&&d.prodItems.some(v=>v!==null&&v!=='na'));
   const todayScores=prodList.map(o=>{const v=day.prodItems?.[o.i];if(v===null||v===undefined)return null;if(v==='na')return 'na';return Math.min(Math.round((Number(v)/o.item.target)*100),150);});
   const todayNA=todayScores.filter(s=>s==='na').length;
@@ -1138,80 +1176,11 @@ function renderProf(){
       <h2 style="font-size:21px;font-weight:bold;margin-bottom:4px">${e.name}</h2>
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px"><span class="tag" style="background:${stc.color}18;color:${stc.color}">${e.st}</span><span class="tag" style="background:${e.sh==='AM'?'#FDF9F3':'#F3F6FD'};color:${e.sh==='AM'?'#8B6914':'#1A4A8B'}">${e.sh}</span></div>
       <div style="font-size:17px;color:#444">${e.role}</div>${e.note?`<div style="font-size:16px;color:#8B6220;margin-top:2px">${e.note}</div>`:''}</div>
-      <div style="display:flex;gap:7px;flex-wrap:wrap">${[['OVERALL',ov],[e.st==='Prep / AM'?'PROTO 30%':'PROTO 55%',wp],[e.st==='Prep / AM'?'PROD 70%':'PROD 45%',Math.min(wpr,100)]].map(([l,v])=>`<div style="text-align:center;padding:6px 9px;background:#FAFAF8;border-radius:7px;border:1px solid #E8E4DC;min-width:60px"><div style="font-size:19px;font-weight:bold;color:${sc(v)};line-height:1">${v}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:17px;color:#333;letter-spacing:.06em;margin-top:2px">${l}</div></div>`).join('')}</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">${[['OVERALL',ov],['PROTOCOL',wp]].map(([l,v])=>`<div style="text-align:center;padding:6px 9px;background:#FAFAF8;border-radius:7px;border:1px solid #E8E4DC;min-width:60px"><div style="font-size:19px;font-weight:bold;color:${sc(v)};line-height:1">${v}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:17px;color:#333;letter-spacing:.06em;margin-top:2px">${l}</div></div>`).join('')}</div>
     </div>
     <div style="display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap">${tabs}</div>
     <div style="margin-bottom:10px;display:flex;align-items:center;gap:7px"><span style="font-size:15px;color:#444;font-weight:bold">${WEEK[curProfDay].full}</span><span style="background:${day.working?'#FDF9F3':'#EEE'};color:${day.working?'#8B6914':'#AAA'};font-size:17px;padding:3px 8px;border-radius:4px;border:1px solid ${day.working?'#E8D5A3':'#DDD'};font-weight:bold">${day.sched||'Off'}</span></div>
     ${day.working?`
-    <div class="card" style="margin-bottom:9px">
-      <button class="sec-toggle open" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">Production &#8212; ${WEEK[curProfDay].full}</div><span class="arr">&#9654;</span></button><div class="sec-body open">
-      ${todayAvgScore!==null?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 11px;background:#FAFAF8;border:1px solid #E8E4DC;border-radius:6px">
-        <div style="font-size:16px;color:#333;flex:1">Score aujourd'hui (${todayEntered.length}/${prodList.length} items)</div>
-        <div style="font-size:23px;font-weight:bold;color:${sc(Math.min(todayAvgScore,100))}">${Math.min(todayAvgScore,100)}<span style="font-size:15px;color:#444">%</span></div>
-        ${todayAvgScore>100?`<div style="font-size:16px;color:#27AE60;font-weight:bold">+${todayAvgScore-100}% above</div>`:''}
-      </div>`:''}
-      <div style="display:flex;flex-direction:column;gap:7px">
-      ${prodList.map(o=>{
-        const item=o.item,i=o.i;
-        const val=day.prodItems?.[i];
-        const hasV=val!==null&&val!==undefined;
-        const pct2=hasV?Math.min(Math.round((Number(val)/item.target)*100),150):null;
-        const iwd=wdays.filter(d=>d.prodItems?.[i]!==null&&d.prodItems?.[i]!==undefined);
-        const iavg=iwd.length?Math.round(iwd.reduce((a,d)=>a+Number(d.prodItems[i]),0)/iwd.length):null;
-        const isNA=val==='na';
-        return `<div style="padding:9px 11px;border:1px solid ${isNA?'#E0E0E0':hasV?'#E8E4DC':'#F0D5B0'};border-radius:7px;background:${isNA?'#F5F5F5':hasV?'#FAFAF8':'#FFF8F0'};opacity:${isNA?'0.65':'1'}">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-            <div style="flex:1;min-width:110px">
-              <div style="font-size:15px;font-weight:bold;color:${isNA?'#AAA':'#333'};${isNA?'text-decoration:line-through':''}">${item.label}</div>
-              <div style="font-size:16px;color:#333;margin-top:1px">${isNA?'<span style="color:#444;font-style:italic">Non applicable ce jour</span>':`Target: <strong style="color:${stc.color}">${item.target} ${item.unit}/day</strong>${iavg!==null?' &middot; Avg: <strong>'+iavg+' '+item.unit+'</strong>':''}`}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
-              ${isNA?'':`<div style="text-align:center">
-                <div style="font-size:15px;color:#333;margin-bottom:2px">Realized</div>
-                <input type="number" min="0" class="prod-inp" style="width:70px;font-size:15px;border-color:${hasV?stc.color:'#DDD'}"
-                  value="${hasV?val:''}" placeholder="${item.target}" oninput="setProdItem(${i},this.value)"/>
-                <div style="font-size:15px;color:#333;margin-top:1px">${item.unit}</div>
-              </div>
-              <div style="text-align:center;min-width:44px">
-                ${hasV?`<div style="font-size:21px;font-weight:bold;color:${sc(Math.min(pct2,100))};line-height:1">${pct2>149?'150+':pct2}<span style="font-size:17px;color:#444">%</span></div>
-                <div style="font-size:17px;color:${sc(Math.min(pct2,100))}">${pct2>=100?'Above':pct2>=70?'Near':'Below'}</div>`
-                :'<div style="font-size:15px;color:#8B6220;margin-top:4px">Enter</div>'}
-              </div>`}
-              <button onclick="toggleNA(${i})" style="background:${isNA?'#888':'#F0EDE6'};color:${isNA?'#fff':'#888'};border:1px solid ${isNA?'#888':'#DDD'};border-radius:5px;padding:4px 8px;font-size:16px;cursor:pointer;white-space:nowrap;flex-shrink:0">${isNA?'Undo N/A':'N/A'}</button>
-            </div>
-          </div>
-          ${hasV&&!isNA?`<div style="margin-top:5px">
-            <div style="display:flex;justify-content:space-between;font-size:15px;color:#333;margin-bottom:2px">
-              <span>${val} / ${item.target} ${item.unit}</span>
-              <span style="color:${sc(Math.min(pct2,100))};font-weight:bold">${pct2}%</span>
-            </div>
-            <div style="height:6px;background:#EEE;border-radius:3px;overflow:hidden">
-              <div style="height:100%;width:${Math.min(pct2,100)}%;background:${pct2>=100?'#27AE60':pct2>=70?'#E67E22':'#E74C3C'};border-radius:3px;transition:width .4s"></div>
-            </div>
-          </div>`:''}
-        </div>`;
-      }).join('')}
-      </div>
-</div>
-    </div>
-    ${wdays.length?`<div class="card" style="margin-bottom:9px">
-      <button class="sec-toggle" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">Weekly Summary</div><span class="arr">&#9654;</span></button><div class="sec-body">
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:16px">
-          <tr>
-            <th style="text-align:left;padding:4px 6px;color:#333;font-weight:normal;border-bottom:1px solid #EEE">Item</th>
-            <th style="color:#333;font-weight:normal;border-bottom:1px solid #EEE;padding:4px 5px;text-align:center">Target</th>
-            ${WEEK.map((w,wi)=>SD[e.id]?.[wi]?.working?`<th style="color:#333;font-weight:normal;border-bottom:1px solid #EEE;padding:4px 3px;text-align:center">${w.short}<br><span style="font-size:17px">${w.full.replace(w.short+' ','')}</span></th>`:'').join('')}
-          </tr>
-          ${prodList.map(o=>{const item=o.item,pi=o.i;return `<tr style="border-bottom:1px solid #F5F5F5">
-            <td style="padding:5px 6px;font-weight:bold;color:#333;white-space:nowrap">${item.label}</td>
-            <td style="padding:5px 5px;text-align:center;color:${stc.color};font-weight:bold">${item.target}<br><span style="font-size:17px;font-weight:normal;color:#333">${item.unit}</span></td>
-            ${WEEK.map((w,wi)=>{const d=SD[e.id]?.[wi];if(!d?.working)return '';const v=d.prodItems?.[pi];const hv=v!==null&&v!==undefined;const p2=hv?Math.min(Math.round((Number(v)/item.target)*100),150):null;const isNA2=v==='na';return '<td style="padding:5px 3px;text-align:center">'+(isNA2?'<div style="font-size:15px;color:#333;font-style:italic">N/A</div>':hv?'<div style="font-size:15px;font-weight:bold;color:'+sc(Math.min(p2,100))+'">'+v+'</div><div style="font-size:17px;color:'+sc(Math.min(p2,100))+'">'+p2+'%</div><div style="height:3px;background:#EEE;border-radius:2px;margin-top:2px;overflow:hidden"><div style="height:100%;width:'+Math.min(p2,100)+'%;background:'+sc(Math.min(p2,100))+';border-radius:2px"></div></div>':'<div style="font-size:16px;color:#444">&#8212;</div>')+'</td>';}).join('')}
-          </tr>`;}).join('')}
-        </table>
-      </div>
-    </div>`:''}
-
     <div class="card" style="margin-bottom:9px">
       <button class="sec-toggle open" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">🧹 Protocol — ${e.st}</div><span class="arr">&#9654;</span></button><div class="sec-body open">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><div style="font-size:17px;color:#333">${pd} / ${pdApplicable} applicable${pdNA>0?' <span style="color:#444;font-size:15px">('+pdNA+' N/A)</span>':''}</div><div style="font-size:16px;font-weight:bold;color:${sc(pp)}">${pp}%</div></div>
@@ -1225,6 +1194,12 @@ function renderProf(){
 </div>
     </div>`:''}
     <div class="card" style="margin-bottom:9px"><button class="sec-toggle" onclick="secToggle(this)"><div class="stitle" style="margin-top:0;margin-bottom:0">⚠️ Remarks / Incidents</div><span class="arr">&#9654;</span></button><div class="sec-body"><textarea class="field" rows="3" placeholder="Add a remark..." oninput="setRmk(this.value)">${day.remarks||''}</textarea>
+      <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        <label class="photo-add-btn" for="rem-photo-input">📷 Attach Photos</label>
+        <input type="file" id="rem-photo-input" accept="image/*" multiple style="display:none" onchange="addRemPhotos(this.files);this.value=''"/>
+        <span style="font-size:13px;color:#888">Photo evidence of the incident (stored on this device)</span>
+      </div>
+      <div id="rem-photos" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px">${remPhotosHtml(e.id,curProfDay)}</div>
 </div></div>`:
     `<div style="padding:11px;background:#F9F8F5;border:1px solid #E8E4DC;border-radius:8px;font-size:15px;color:#333;text-align:center">${e.name} is <strong>off</strong> on ${WEEK[curProfDay].full}.</div>`}
     ${incLog?`<div class="card"><div class="stitle" style="margin-top:0">📋 Incident Log</div>${incLog}</div>`:''}`;
@@ -1356,6 +1331,7 @@ function renderActions(){
   document.getElementById('custom-actions-list').innerHTML=customs.length?customs.map((c,i)=>`<div class="crow${c.done?' done':''}" onclick="togCustom(${i})"><div class="cbox${c.done?' done':''}"><svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="ctext">${c.text}</span><button onclick="event.stopPropagation();removeCustom(${i})" style="background:none;border:none;color:#999;font-size:17px;padding:0 2px;line-height:1">×</button></div>`).join(''):
   `<div style="font-size:17px;color:#333;padding:7px 0">No custom actions. Add one below.</div>`;
   document.getElementById('act-notes').value=ACT_NOTES[curActDay]||'';
+  renderActPhotos();
 }
 function selActDay(i){curActDay=i;save('curActDay2',i);renderActions();}
 function togFridge(id){ACT_FRIDGE[curActDay][id]=!ACT_FRIDGE[curActDay][id];saveAll();renderActions();}
@@ -1363,17 +1339,316 @@ function togCustom(i){ACT_CUSTOM[curActDay][i].done=!ACT_CUSTOM[curActDay][i].do
 function removeCustom(i){ACT_CUSTOM[curActDay].splice(i,1);saveAll();renderActions();}
 function addCustomAction(){const inp=document.getElementById('new-action-text');const text=inp.value.trim();if(!text)return;ACT_CUSTOM[curActDay].push({text,done:false});inp.value='';saveAll();renderActions();}
 function saveActNotes(){ACT_NOTES[curActDay]=document.getElementById('act-notes').value;saveAll();}
+function compressImage(file,cb){
+  const r=new FileReader();
+  r.onload=ev=>{const img=new Image();img.onload=()=>{
+    const max=800;let w=img.width,h=img.height;
+    if(w>max){h=Math.round(h*max/w);w=max;}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    cb(c.toDataURL('image/jpeg',0.62));
+  };img.src=ev.target.result;};
+  r.readAsDataURL(file);
+}
+function addActPhotos(files){
+  if(!ACT_PHOTOS[curActDay])ACT_PHOTOS[curActDay]=[];
+  if(ACT_PHOTOS[curActDay].length+files.length>12){alert('Maximum 12 photos per day.');return;}
+  Array.from(files).forEach(f=>{
+    if(!f.type.startsWith('image/'))return;
+    compressImage(f,data=>{
+      ACT_PHOTOS[curActDay].push({data,name:f.name,ts:Date.now()});
+      try{save('ACT_PHOTOS',ACT_PHOTOS);}catch(e){ACT_PHOTOS[curActDay].pop();alert('Storage full — delete some old photos.');}
+      renderActPhotos();
+    });
+  });
+}
+function remKey(){return curEmpId+'_'+curProfDay;}
+function remPhotosHtml(empId,di){
+  const ph=REM_PHOTOS[empId+'_'+di]||[];
+  return ph.length?ph.map((p,i)=>`<div class="photo-thumb"><img src="${p.data}" onclick="viewRemPhoto('${empId+'_'+di}',${i})" title="${p.name||''}"/><button class="photo-del" onclick="removeRemPhoto('${empId+'_'+di}',${i})">×</button></div>`).join(''):
+  '<div style="font-size:14px;color:#999">No photos attached.</div>';
+}
+function addRemPhotos(files){
+  const k=remKey();
+  if(!REM_PHOTOS[k])REM_PHOTOS[k]=[];
+  if(REM_PHOTOS[k].length+files.length>8){alert('Maximum 8 photos per remark.');return;}
+  Array.from(files).forEach(f=>{
+    if(!f.type.startsWith('image/'))return;
+    compressImage(f,data=>{
+      REM_PHOTOS[k].push({data,name:f.name,ts:Date.now()});
+      try{save('REM_PHOTOS',REM_PHOTOS);}catch(e){REM_PHOTOS[k].pop();alert('Storage full — delete some old photos.');return;}
+      const el=document.getElementById('rem-photos');if(el)el.innerHTML=remPhotosHtml(curEmpId,curProfDay);
+    });
+  });
+}
+function removeRemPhoto(k,i){if(!confirm('Delete this photo?'))return;(REM_PHOTOS[k]||[]).splice(i,1);if(!REM_PHOTOS[k].length)delete REM_PHOTOS[k];save('REM_PHOTOS',REM_PHOTOS);const el=document.getElementById('rem-photos');if(el)el.innerHTML=remPhotosHtml(curEmpId,curProfDay);}
+function viewRemPhoto(k,i){const p=(REM_PHOTOS[k]||[])[i];if(!p)return;const w=window.open('');w.document.write('<body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="'+p.data+'" style="max-width:100%;max-height:100vh"/></body>');}
+function removeActPhoto(i){if(!confirm('Delete this photo?'))return;ACT_PHOTOS[curActDay].splice(i,1);save('ACT_PHOTOS',ACT_PHOTOS);renderActPhotos();}
+function viewActPhoto(i){const p=ACT_PHOTOS[curActDay][i];if(!p)return;const w=window.open('');w.document.write('<body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="'+p.data+'" style="max-width:100%;max-height:100vh"/></body>');}
+function renderActPhotos(){
+  const el=document.getElementById('act-photos');if(!el)return;
+  const ph=ACT_PHOTOS[curActDay]||[];
+  el.innerHTML=ph.length?ph.map((p,i)=>`<div class="photo-thumb"><img src="${p.data}" onclick="viewActPhoto(${i})" title="${p.name||''}"/><button class="photo-del" onclick="removeActPhoto(${i})">×</button></div>`).join(''):
+  '<div style="font-size:14px;color:#999">No photos for this day.</div>';
+}
 
-// ── CHART ─────────────────────────────────────────────────────────────────────
-function setMetric(m,btn){curMetric=m;document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderChart();}
-function renderChart(){
-  const scored=emps.map(e=>({...e,pt:empProt(e.id),pr:empProd(e.id),ov:empOverall(e.id)}));
-  const gv=e=>curMetric==='overall'?e.ov:curMetric==='protocol'?e.pt:Math.min(e.pr,100);
-  const sorted=[...scored].sort((a,b)=>gv(b)-gv(a));
-  const avg=Math.round(scored.reduce((a,e)=>a+e.ov,0)/scored.length);
-  document.getElementById('chart-sum').innerHTML=[['🏆 Top Performer',sorted[0]?.name,'#27AE60'],['📊 Team Average',avg+'%','#8B6220'],['⚠️ Below 55%',scored.filter(e=>e.ov<55).length+' staff','#E74C3C']].map(([l,v,c])=>`<div class="card"><div style="font-size:16px;color:#333;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px">${l}</div><div style="font-size:16px;color:${c};font-weight:bold">${v}</div></div>`).join('');
-  document.getElementById('chart-bars').innerHTML=`<div style="display:flex;gap:9px;margin-bottom:10px;flex-wrap:wrap">${[['#27AE60','≥80%'],['#E67E22','55–79%'],['#E74C3C','<55%']].map(([c,l])=>`<div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:2px;background:${c}"></div><span style="font-size:16px;color:#333">${l}</span></div>`).join('')}</div><div style="display:flex;flex-direction:column;gap:6px">${sorted.map((e,i)=>{const val=gv(e);const stc=ST[e.st]||{color:'#222',target:0,unit:''};const wd=SD[e.id]?.filter(d=>d.working&&d.produced!==null)||[];const avg=wd.length?Math.round(wd.reduce((a,d)=>a+Number(d.produced),0)/wd.length):null;return `<div onclick="openProfFromStaff(${e.id})" style="cursor:pointer;display:flex;align-items:center;gap:7px" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'"><div style="font-size:15px;color:#444;width:17px;text-align:right;flex-shrink:0">#${i+1}</div><div style="width:150px;flex-shrink:0"><div style="font-size:17px;color:#333;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div><div style="font-size:15px;color:${stc.color}">${e.st}${avg!==null?' · '+avg+'/'+stc.target+' '+stc.unit:''}</div></div><div class="barcont"><div class="barfill" style="width:${val}%;background:${sc(val)};min-width:${val>0?26:0}px">${val}%</div></div></div>`;}).join('')}</div>`;
-  document.getElementById('st-avgs').innerHTML=Object.entries(ST).map(([n,s])=>{const se=scored.filter(e=>e.st===n);if(!se.length)return'';const a=Math.round(se.reduce((acc,e)=>acc+e.ov,0)/se.length);return `<div class="card" style="border-left:4px solid ${s.color}"><div style="font-size:15px;color:${s.color};letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;font-weight:bold">${n}</div><div style="font-size:17px;font-weight:bold;color:${sc(a)}">${a}<span style="font-size:17px;color:#444">%</span></div><div style="font-size:15px;color:#333;margin-top:1px">${se.length} staff · ${s.target} ${s.unit}/day</div></div>`;}).join('');
+// ── HISTORY (protocole / waste par jour) ──────────────────────────────────────
+// Jour d'aujourd'hui dans la semaine (Lun=0 .. Dim=6); défaut si hors semaine = aujourd'hui mappé
+function todayIndex(){const d=new Date().getDay();return d===0?6:d-1;} // getDay: Dim=0..Sam=6 -> Lun=0..Dim=6
+let curHistDay=todayIndex(),curHistSt=load('curHistSt','All');
+function renderHistory(){
+  const sel=document.getElementById('hist-st');
+  if(sel){
+    const opts=['All',...Object.keys(ST)];
+    if(sel.options.length!==opts.length){
+      sel.innerHTML=opts.map(o=>`<option value="${o}">${o==='All'?'All stations':o}</option>`).join('');
+    }
+    curHistSt=sel.value||curHistSt;sel.value=curHistSt;save('curHistSt',curHistSt);
+  }
+  document.getElementById('hist-day-btns').innerHTML=WEEK.map((w,i)=>{
+    const a=i===curHistDay;
+    const wk=emps.filter(e=>SD[e.id]?.[i]?.working&&(curHistSt==='All'||e.st===curHistSt));
+    return `<button class="daybtn${a?' active':''}" onclick="selHistDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div><div style="font-size:16px;margin-top:2px;color:${a?'rgba(255,255,255,.9)':wk.length?'#27AE60':'#AAA'};font-weight:bold">${wk.length?wk.length+' staff':'Off'}</div></button>`;
+  }).join('');
+  const di=curHistDay;
+  const working=emps.filter(e=>SD[e.id]?.[di]?.working&&(curHistSt==='All'||e.st===curHistSt));
+  if(!working.length){document.getElementById('history-content').innerHTML='<div class="rep-card" style="text-align:center;color:#999;font-size:14px">No one scheduled this day for this station.</div>';return;}
+  const cards=working.map(e=>{
+    const d=SD[e.id][di];const stc=ST[e.st]||{color:'#888'};
+    const protoAll=PROTO[e.st]||[];const idx=protoAll.map((t,i)=>i).filter(i=>itemAppliesTo(protoAll[i],e));
+    const pv=d.protocol||[];
+    const protoRows=idx.map(i=>{const v=pv[i];const done=v===true;const na=v==='na';return `<div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:14px"><span style="width:16px;text-align:center;color:${na?'#999':done?'#27AE60':'#E74C3C'}">${na?'–':done?'✓':'✗'}</span><span style="color:${na?'#999':'#333'};${na?'text-decoration:line-through':''}">${protoAll[i]}</span></div>`;}).join('');
+    const pp=dayProtoPct(e,d);
+    const waste=WASTE_ITEMS[e.st]||[];
+    const wRows=waste.map((lbl,i)=>{const v=(d.waste||[])[i];if(!v||Number(v)<=0)return '';return `<div style="display:flex;justify-content:space-between;font-size:14px;padding:2px 0"><span style="color:#333">${lbl}</span><span style="color:#E74C3C;font-weight:bold">${v}</span></div>`;}).filter(Boolean).join('');
+    return `<div class="rep-card" style="border-left:4px solid ${stc.color}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:5px">
+        <div><strong style="font-size:15px">${e.name}</strong> <span style="font-size:13px;color:${stc.color}">${e.st}</span></div>
+        <div style="font-size:14px;font-weight:bold;color:${pp===null?'#BBB':sc(pp)}">Protocol: ${pp===null?'—':pp+'%'}</div>
+      </div>
+      <div style="margin-bottom:6px">${protoRows||'<span style="font-size:13px;color:#999">No protocol items.</span>'}</div>
+      <div style="border-top:1px solid #EEE;padding-top:5px"><div style="font-size:13px;color:#888;margin-bottom:2px">🗑️ Waste</div>${wRows||'<span style="font-size:13px;color:#27AE60">None</span>'}</div>
+      ${d.remarks?`<div style="margin-top:6px;font-size:14px;color:#E74C3C;border-top:1px solid #FEE;padding-top:5px">⚠️ ${d.remarks}</div>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('history-content').innerHTML=cards;
+}
+function selHistDay(i){curHistDay=i;save('curHistDay',i);renderHistory();}
+
+// ── REPORT ────────────────────────────────────────────────────────────────────
+let curRepMode='daily',curRepDay=load('curRepDay',0);
+function setRepMode(m){curRepMode=m;document.getElementById('rep-daily-btn').classList.toggle('active',m==='daily');document.getElementById('rep-weekly-btn').classList.toggle('active',m==='weekly');renderReport();}
+function protoIdxFor(e){const pa=PROTO[e.st]||[];return pa.map((t,i)=>i).filter(i=>itemAppliesTo(pa[i],e));}
+function prodListFor(e){return (PROD_ITEMS[e.st]||[]).map((item,i)=>({item,i})).filter(o=>prodAppliesTo(e.st,o.item.label,e));}
+function dayProtoPct(e,d){const idx=protoIdxFor(e);const pv=d.protocol||[];const app=idx.filter(i=>pv[i]!=='na');if(!app.length)return null;return Math.round(app.filter(i=>pv[i]===true).length/app.length*100);}
+function dayProdPct(e,d){const pl=prodListFor(e);const dp=d.prodItems||[];const ent=pl.filter(o=>dp[o.i]!==null&&dp[o.i]!==undefined&&dp[o.i]!=='na');if(!ent.length)return null;return Math.min(Math.round(ent.reduce((a,o)=>a+Math.min(Number(dp[o.i])/o.item.target*100,150),0)/ent.length),100);}
+function selRepDay(i){curRepDay=i;save('curRepDay',i);renderReport();}
+function kpi(v,l,c){return `<div class="rep-kpi"><div class="v" style="color:${c||'#1A1A1A'}">${v}</div><div class="l">${l}</div></div>`;}
+
+function renderReport(){
+  document.getElementById('rep-day-btns').innerHTML=curRepMode==='daily'?WEEK.map((w,i)=>`<button class="daybtn${i===curRepDay?' active':''}" onclick="selRepDay(${i})"><div style="font-weight:bold;font-size:15px">${w.short}</div><div style="font-size:15px;opacity:.8">${w.full.replace(w.short+' ','')}</div></button>`).join(''):'';
+  document.getElementById('report-content').innerHTML=curRepMode==='daily'?buildDailyReport(curRepDay):buildWeeklyReport();
+}
+
+function buildDailyReport(di){
+  const w=WEEK[di];
+  const working=emps.filter(e=>SD[e.id]?.[di]?.working);
+  // KPIs
+  let protoVals=[],wasteEntries=[],incidents=[];
+  working.forEach(e=>{
+    const d=SD[e.id][di];
+    const pp=dayProtoPct(e,d);if(pp!==null)protoVals.push(pp);
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteEntries.push({emp:e.name,st:e.st,label:lbl,qty:v});});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incidents.push({emp:e.name,st:e.st,text:d.remarks||'(photo attached, no text)',key:e.id+'_'+di,photos:REM_PHOTOS[e.id+'_'+di]||[]});
+  });
+  const protoAvg=protoVals.length?Math.round(protoVals.reduce((a,v)=>a+v,0)/protoVals.length):null;
+  const dels=DEL[di]?.deliveries||[];
+  const delOk=dels.filter(d=>d.onTime===true&&d.correct===true).length;
+  const invAlerts=[];Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){const it=INV_ITEMS.find(x=>x.id===id);if(it)invAlerts.push({n:it.n,loc:it.loc,status:d.status,qty:d.qty,notes:d.notes,par:it.par});}});
+  const fr=ACT_FRIDGE[di]||{};const frDone=FRIDGE_ITEMS.filter(f=>fr[f.id]).length;
+  const cust=ACT_CUSTOM[di]||[];const custDone=cust.filter(c=>c.done).length;
+  const photos=ACT_PHOTOS[di]||[];
+
+  // Protocole par station
+  const stRows=Object.keys(ST).map(st=>{
+    const team=working.filter(e=>e.st===st);if(!team.length)return '';
+    return team.map(e=>{
+      const d=SD[e.id][di];const pp=dayProtoPct(e,d);
+      return `<tr><td style="color:${ST[st].color};font-weight:bold">${st}</td><td>${e.name}</td><td style="text-align:center;font-weight:bold;color:${pp===null?'#BBB':sc(pp)}">${pp===null?'—':pp+'%'}</td></tr>`;
+    }).join('');
+  }).join('');
+
+  return `
+  <div class="rep-card" style="border-left:4px solid #8B6220">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:baseline">
+      <div><div style="font-size:18px;font-weight:bold">Daily Report — ${w.full}</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · Week of July 6-12, 2026</div></div>
+      <div style="font-size:13px;color:#888">Generated ${new Date().toLocaleDateString('en-US')}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px">
+    ${kpi(working.length,'Staff on shift','#8B6220')}
+    ${kpi(protoAvg===null?'—':protoAvg+'%','Avg protocol',protoAvg===null?'#BBB':sc(protoAvg))}
+    ${kpi(wasteEntries.length,'Waste entries',wasteEntries.length?'#E74C3C':'#27AE60')}
+    ${kpi(incidents.length,'Incidents',incidents.length?'#E74C3C':'#27AE60')}
+    ${kpi(dels.length?delOk+'/'+dels.length:'—','Deliveries OK',dels.length?(delOk===dels.length?'#27AE60':'#E67E22'):'#BBB')}
+    ${kpi(invAlerts.length,'Stock alerts',invAlerts.length?'#E67E22':'#27AE60')}
+    ${kpi(frDone+'/'+FRIDGE_ITEMS.length,'HACCP checks',frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22')}
+  </div>
+  <div class="rep-card"><div class="rep-title">👥 Protocol by Employee</div>
+    ${working.length?`<div style="overflow-x:auto"><table class="rep-table"><tr><th>Station</th><th>Employee</th><th style="text-align:center">Protocol</th></tr>${stRows}</table></div>`:'<div style="font-size:14px;color:#999">No one is scheduled this day.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🗑️ Waste / Leftovers</div>
+    ${wasteEntries.length?`<table class="rep-table"><tr><th>Employee</th><th>Item</th><th style="text-align:center">Qty</th></tr>${wasteEntries.map(x=>`<tr><td>${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span></td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No waste recorded.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">⚠️ Incidents / Remarks</div>
+    ${incidents.length?incidents.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.emp}</strong> <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.photos.length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${x.photos.map((p,pi)=>`<img src="${p.data}" style="width:70px;height:70px;object-fit:cover;border-radius:5px;border:1px solid #E8A3A3;cursor:pointer" onclick="viewRemPhoto('${x.key}',${pi})"/>`).join('')}</div>`:''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ No incidents.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🚚 Deliveries (Olivier)</div>
+    ${dels.length?dels.map((d,i)=>`<div style="padding:6px 9px;border:1px solid #EEE;border-radius:5px;margin-bottom:5px;font-size:14px;background:${d.onTime&&d.correct?'#F0FAF4':'#FFF8F0'}">#${i+1} · Window: ${d.window||'—'} · ${d.onTime===true?'✓ On time':d.onTime===false?'✗ Late':'—'} · ${d.correct===true?'✓ Correct':d.correct===false?'✗ Issue':'—'} · Location: ${d.location||'—'}${d.notes?'<br><span style="color:#666">'+d.notes+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#999">No deliveries recorded.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">📦 Inventory — Stock Alerts</div>
+    ${invAlerts.length?`<table class="rep-table"><tr><th>Product</th><th>Location</th><th style="text-align:center">Par</th><th style="text-align:center">In stock</th><th style="text-align:center">Status</th></tr>${invAlerts.map(x=>`<tr><td>${x.n}</td><td>${x.loc}</td><td style="text-align:center">${x.par}</td><td style="text-align:center">${x.qty||'—'}</td><td style="text-align:center;font-weight:bold;color:${x.status==='out'?'#E74C3C':'#E67E22'}">${x.status==='out'?'✗ Out':'⚠ Low'}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No stock alerts.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">✅ Actions & HACCP</div>
+    <div style="font-size:14px;margin-bottom:5px">Fridge / HACCP checks: <strong style="color:${frDone===FRIDGE_ITEMS.length?'#27AE60':'#E67E22'}">${frDone}/${FRIDGE_ITEMS.length}</strong> · Custom actions: <strong>${custDone}/${cust.length}</strong></div>
+    ${cust.filter(c=>!c.done).length?'<div style="font-size:13px;color:#E67E22">To do: '+cust.filter(c=>!c.done).map(c=>c.text).join(' · ')+'</div>':''}
+    ${ACT_NOTES[di]?`<div style="margin-top:7px;padding:7px 9px;background:#FDF9F3;border-radius:5px;font-size:14px"><strong>Notes:</strong> ${ACT_NOTES[di]}</div>`:''}
+    ${photos.length?`<div style="margin-top:8px"><div style="font-size:13px;color:#888;margin-bottom:5px">📷 ${photos.length} photo(s)</div><div style="display:flex;gap:6px;flex-wrap:wrap">${photos.map((p,i)=>`<img src="${p.data}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #E8E4DC;cursor:pointer" onclick="curActDay=${di};viewActPhoto(${i})"/>`).join('')}</div></div>`:''}
+  </div>`;
+}
+
+function buildWeeklyReport(){
+  const scored=emps.map(e=>({e,pt:empProt(e.id),ov:empOverall(e.id),days:SD[e.id]?.filter(d=>d.working).length||0}));
+  const avg=Math.round(scored.reduce((a,x)=>a+x.ov,0)/scored.length);
+  const sorted=[...scored].sort((a,b)=>b.ov-a.ov);
+  let wasteAll=[],incAll=[];
+  emps.forEach(e=>{(SD[e.id]||[]).forEach((d,di)=>{
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteAll.push({day:WEEK[di].short,emp:e.name,label:lbl,qty:v});});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push({day:WEEK[di].short,emp:e.name,st:e.st,text:d.remarks||'(photo attached, no text)',nph:(REM_PHOTOS[e.id+'_'+di]||[]).length});
+  });});
+  let delAll=[];WEEK.forEach((w,di)=>{(DEL[di]?.deliveries||[]).forEach(d=>delAll.push({day:w.short,...d}));});
+  const delOk=delAll.filter(d=>d.onTime===true&&d.correct===true).length;
+  const invFlag={};WEEK.forEach((w,di)=>{Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){if(!invFlag[id])invFlag[id]=[];invFlag[id].push({day:w.short,status:d.status});}});});
+  const frTot=WEEK.reduce((a,w,di)=>a+FRIDGE_ITEMS.filter(f=>(ACT_FRIDGE[di]||{})[f.id]).length,0);
+  const photosTot=ACT_PHOTOS.reduce((a,p)=>a+(p?.length||0),0);
+
+  return `
+  <div class="rep-card" style="border-left:4px solid #8B6220">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;align-items:baseline">
+      <div><div style="font-size:18px;font-weight:bold">Weekly Report — Week of July 6-12, 2026</div><div style="font-size:13px;color:#888">Lapis Restaurant · BOH · ${emps.length} employees</div></div>
+      <div style="font-size:13px;color:#888">Generated ${new Date().toLocaleDateString('en-US')}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin-bottom:10px">
+    ${kpi(avg+'%','Team avg score',sc(avg))}
+    ${kpi(sorted[0]?sorted[0].e.name.split(',')[0]:'—','Top performer','#27AE60')}
+    ${kpi(scored.filter(x=>x.ov<55).length,'Below 55%',scored.filter(x=>x.ov<55).length?'#E74C3C':'#27AE60')}
+    ${kpi(incAll.length,'Incidents',incAll.length?'#E74C3C':'#27AE60')}
+    ${kpi(wasteAll.length,'Waste entries',wasteAll.length?'#E67E22':'#27AE60')}
+    ${kpi(delAll.length?delOk+'/'+delAll.length:'—','Deliveries OK',delAll.length?(delOk===delAll.length?'#27AE60':'#E67E22'):'#BBB')}
+    ${kpi(frTot+'/'+FRIDGE_ITEMS.length*7,'HACCP checks',frTot===FRIDGE_ITEMS.length*7?'#27AE60':'#E67E22')}
+    ${kpi(photosTot,'Photos','#8B6220')}
+  </div>
+  <div class="rep-card"><div class="rep-title">📊 Scores by Station</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px">
+    ${Object.entries(ST).map(([n,cfg])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return '';const a=Math.round(t.reduce((acc,x)=>acc+x.ov,0)/t.length);return `<div style="padding:8px;border:1px solid #E8E4DC;border-left:4px solid ${cfg.color};border-radius:6px"><div style="font-size:12px;color:${cfg.color};font-weight:bold;text-transform:uppercase">${n}</div><div style="font-size:18px;font-weight:bold;color:${sc(a)}">${a}%</div><div style="font-size:12px;color:#888">${t.length} employee(s)</div></div>`;}).join('')}
+    </div>
+  </div>
+  <div class="rep-card"><div class="rep-title">👥 Employee Details</div>
+    <div style="overflow-x:auto"><table class="rep-table">
+      <tr><th>#</th><th>Employee</th><th>Station</th><th style="text-align:center">Days</th><th style="text-align:center">Protocol</th><th style="text-align:center">Overall</th></tr>
+      ${sorted.map((x,i)=>`<tr><td style="color:#999">${i+1}</td><td style="font-weight:bold">${x.e.name}</td><td style="color:${ST[x.e.st]?.color||'#666'}">${x.e.st}</td><td style="text-align:center">${x.days}</td><td style="text-align:center;color:${sc(x.pt)}">${x.pt}%</td><td style="text-align:center;font-weight:bold;color:${sc(x.ov)}">${x.ov}%</td></tr>`).join('')}
+    </table></div>
+  </div>
+  <div class="rep-card"><div class="rep-title">⚠️ Incidents This Week</div>
+    ${incAll.length?incAll.map(x=>`<div style="padding:6px 9px;background:#FFF5F5;border-left:3px solid #E74C3C;border-radius:4px;margin-bottom:5px;font-size:14px"><strong>${x.day}</strong> · ${x.emp} <span style="color:#999;font-size:12px">(${x.st})</span> — ${x.text}${x.nph?' <span style="color:#8B6220;font-weight:bold">📷 '+x.nph+'</span>':''}</div>`).join(''):'<div style="font-size:14px;color:#27AE60">✓ No incidents this week.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🗑️ Waste This Week</div>
+    ${wasteAll.length?`<table class="rep-table"><tr><th>Day</th><th>Employee</th><th>Item</th><th style="text-align:center">Qty</th></tr>${wasteAll.map(x=>`<tr><td>${x.day}</td><td>${x.emp}</td><td>${x.label}</td><td style="text-align:center;color:#E74C3C;font-weight:bold">${x.qty}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No waste recorded.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">🚚 Deliveries This Week</div>
+    ${delAll.length?`<table class="rep-table"><tr><th>Day</th><th>Window</th><th style="text-align:center">On time</th><th style="text-align:center">Correct</th><th>Location</th><th>Notes</th></tr>${delAll.map(d=>`<tr><td>${d.day}</td><td>${d.window||'—'}</td><td style="text-align:center">${d.onTime===true?'✓':d.onTime===false?'✗':'—'}</td><td style="text-align:center">${d.correct===true?'✓':d.correct===false?'✗':'—'}</td><td>${d.location||'—'}</td><td style="font-size:12px;color:#666">${d.notes||''}</td></tr>`).join('')}</table>`:'<div style="font-size:14px;color:#999">No deliveries recorded.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">📦 Flagged Products (low / out)</div>
+    ${Object.keys(invFlag).length?`<table class="rep-table"><tr><th>Product</th><th>Days flagged</th></tr>${Object.entries(invFlag).map(([id,flags])=>{const it=INV_ITEMS.find(x=>x.id===id);return it?`<tr><td>${it.n} <span style="color:#999;font-size:12px">(${it.loc})</span></td><td>${flags.map(f=>`<span style="color:${f.status==='out'?'#E74C3C':'#E67E22'};font-weight:bold">${f.day}${f.status==='out'?' ✗':' ⚠'}</span>`).join(' · ')}</td></tr>`:'';}).join('')}</table>`:'<div style="font-size:14px;color:#27AE60">✓ No flagged products.</div>'}
+  </div>
+  <div class="rep-card"><div class="rep-title">📝 Daily Notes</div>
+    ${WEEK.map((w,di)=>ACT_NOTES[di]?`<div style="margin-bottom:5px;font-size:14px"><strong>${w.short}</strong> — ${ACT_NOTES[di]}</div>`:'').join('')||'<div style="font-size:14px;color:#999">No notes this week.</div>'}
+  </div>`;
+}
+
+
+// ── EMAIL DU RAPPORT ──────────────────────────────────────────────────────────
+let REPORT_EMAIL=load('REPORT_EMAIL','');
+function changeReportEmail(){
+  const v=prompt('Report recipient email address:',REPORT_EMAIL||'');
+  if(v===null)return;
+  REPORT_EMAIL=v.trim();save('REPORT_EMAIL',REPORT_EMAIL);
+  if(REPORT_EMAIL)alert('Recipient saved: '+REPORT_EMAIL);
+}
+function buildDailyEmailText(di){
+  const w=WEEK[di];const L=[];
+  const working=emps.filter(e=>SD[e.id]?.[di]?.working);
+  let protoVals=[],wasteE=[],incs=[];
+  working.forEach(e=>{const d=SD[e.id][di];
+    const pp=dayProtoPct(e,d);if(pp!==null)protoVals.push(pp);
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteE.push(e.name.split(',')[0]+': '+lbl+' = '+v);});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incs.push(e.name+' ('+e.st+') — '+(d.remarks||'photo attached')+((REM_PHOTOS[e.id+'_'+di]||[]).length?' [+'+(REM_PHOTOS[e.id+'_'+di]||[]).length+' photo(s)]':''));
+  });
+  const protoAvg=protoVals.length?Math.round(protoVals.reduce((a,v)=>a+v,0)/protoVals.length):null;
+  const dels=DEL[di]?.deliveries||[];const delOk=dels.filter(d=>d.onTime===true&&d.correct===true).length;
+  const invA=[];Object.entries(INV_DAY[di]||{}).forEach(([id,d])=>{if(d.status==='low'||d.status==='out'){const it=INV_ITEMS.find(x=>x.id===id);if(it)invA.push(it.n+' ('+it.loc+') : '+(d.status==='out'?'OUT OF STOCK':'low'));}});
+  const fr=ACT_FRIDGE[di]||{};const frDone=FRIDGE_ITEMS.filter(f=>fr[f.id]).length;
+  const nPh=(ACT_PHOTOS[di]||[]).length;
+  L.push('LAPIS BOH — DAILY REPORT');L.push(w.full+' · Week of July 6-12, 2026');L.push('');
+  L.push('— SUMMARY —');
+  L.push('Staff on shift: '+working.length);
+  L.push('Avg protocol: '+(protoAvg===null?'—':protoAvg+'%'));
+  L.push('HACCP checks: '+frDone+'/'+FRIDGE_ITEMS.length);
+  L.push('Deliveries OK: '+(dels.length?delOk+'/'+dels.length:'none'));
+  L.push('');
+  L.push('— INCIDENTS ('+incs.length+') —');incs.length?incs.forEach(x=>L.push('• '+x)):L.push('None');L.push('');
+  L.push('— WASTE ('+wasteE.length+') —');wasteE.length?wasteE.forEach(x=>L.push('• '+x)):L.push('None');L.push('');
+  L.push('— STOCK ALERTS ('+invA.length+') —');invA.length?invA.forEach(x=>L.push('• '+x)):L.push('None');L.push('');
+  if(ACT_NOTES[di])L.push('— NOTES —\n'+ACT_NOTES[di]+'\n');
+  if(nPh)L.push('('+nPh+' photo(s) today: see the app)');
+  return L.join('\n');
+}
+function buildWeeklyEmailText(){
+  const L=[];
+  const scored=emps.map(e=>({e,ov:empOverall(e.id)}));
+  const avg=Math.round(scored.reduce((a,x)=>a+x.ov,0)/scored.length);
+  const sorted=[...scored].sort((a,b)=>b.ov-a.ov);
+  const below=sorted.filter(x=>x.ov<55);
+  let incAll=[],wasteN=0;
+  emps.forEach(e=>{(SD[e.id]||[]).forEach((d,di)=>{
+    (WASTE_ITEMS[e.st]||[]).forEach((lbl,i)=>{const v=d.waste?.[i];if(v&&Number(v)>0)wasteN++;});
+    if(d.remarks||REM_PHOTOS[e.id+'_'+di]?.length)incAll.push(WEEK[di].short+' · '+e.name+' — '+(d.remarks||'photo attached'));
+  });});
+  let delAll=[],delOk=0;WEEK.forEach((w,di)=>{(DEL[di]?.deliveries||[]).forEach(d=>{delAll.push(d);if(d.onTime===true&&d.correct===true)delOk++;});});
+  L.push('LAPIS BOH — WEEKLY REPORT');L.push('Week of July 6-12, 2026 · '+emps.length+' employees');L.push('');
+  L.push('— SUMMARY —');
+  L.push('Team avg score: '+avg+'%');
+  L.push('Top performer: '+(sorted[0]?sorted[0].e.name+' ('+sorted[0].ov+'%)':'—'));
+  L.push('Below 55%: '+(below.length?below.map(x=>x.e.name.split(',')[0]+' ('+x.ov+'%)').join(', '):'none'));
+  L.push('Incidents: '+incAll.length+' · Waste: '+wasteN+' entries · Deliveries OK: '+(delAll.length?delOk+'/'+delAll.length:'none'));
+  L.push('');
+  L.push('— SCORES BY STATION —');
+  Object.entries(ST).forEach(([n])=>{const t=scored.filter(x=>x.e.st===n);if(!t.length)return;L.push('• '+n+' : '+Math.round(t.reduce((a,x)=>a+x.ov,0)/t.length)+'% ('+t.length+' staff)');});
+  L.push('');
+  L.push('— TOP 5 —');sorted.slice(0,5).forEach((x,i)=>L.push((i+1)+'. '+x.e.name+' : '+x.ov+'%'));L.push('');
+  L.push('— INCIDENTS ('+incAll.length+') —');incAll.length?incAll.slice(0,15).forEach(x=>L.push('• '+x)):L.push('None');
+  if(incAll.length>15)L.push('… +'+(incAll.length-15)+' more (see the app)');
+  return L.join('\n');
+}
+function sendReportEmail(){
+  if(!REPORT_EMAIL){changeReportEmail();if(!REPORT_EMAIL)return;}
+  const isDaily=curRepMode==='daily';
+  const subject='Lapis BOH — '+(isDaily?'Daily report · '+WEEK[curRepDay].full:'Weekly report · Week of July 6-12, 2026');
+  let body=isDaily?buildDailyEmailText(curRepDay):buildWeeklyEmailText();
+  body+='\n\n---\nReport generated by Lapis Kitchen OS on '+new Date().toLocaleDateString('en-US')+'.\nFor the full version with photos: open the app > Report > Print/PDF.';
+  if(body.length>1800)body=body.slice(0,1750)+'\n… (report truncated — full version in the app)';
+  window.location.href='mailto:'+encodeURIComponent(REPORT_EMAIL)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
 }
 
 // ── ADD ───────────────────────────────────────────────────────────────────────
